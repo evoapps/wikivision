@@ -1,9 +1,18 @@
-from app import app
+import argparse
+
+from .app import app
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        prog='python -m wikivision',
+        description="Visualize Wikipedia article revision histories.",
+    )
+    parser.add_argument('article_slug', nargs='?')
+    return parser
+
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('article_slug', nargs='?')
+    parser = get_parser()
     args = parser.parse_args()
-
     app.run()
