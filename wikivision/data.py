@@ -19,6 +19,11 @@ def get(article_slug, cache=True):
             id_vars={'article_slug': article_slug},
             renamer={'*': 'wikitext'},
         )
+
+        revisions = drop_repeats(revisions)
+        revisions = convert_timestamp_to_datetime(revisions)
+        revisions = label_relationships(revisions)
+
         if cache:
             append_revisions(revisions)
     else:
@@ -122,16 +127,11 @@ def drop_repeats(revisions):
     return revisions.ix[~revisions.is_repeat].drop('is_repeat', axis=1)
 
 
-def append_revisions(revisions):
-    """ Append revisions to the database. """
-    con = db_connection()
-    logging.info("appending revisions to " + HISTORIES_DB)
-    revisions.to_sql('revisions', con, index=False, if_exists='append')
-    con.close()
-
-
-def db_connection():
-    return sqlite3.connect('{}.sqlite'.format(HISTORIES_DB))
+def convert_timestamp_to_datetime(revisions):
+    revisions = revisions.copy()
+    revisions['timestamp'] = pd.to_datetime(revisions.timestamp)
+    revisions.sort_values(by='timestamp', inplace=True)
+    return revisions
 
 
 def label_relationships(revisions):
@@ -165,3 +165,15 @@ def label_relationships(revisions):
         reindex(revisions.parentid).\
         reset_index()
     return revisions.merge(parent_sha)
+
+
+def append_revisions(revisions):
+    """ Append revisions to the database. """
+    con = db_connection()
+    logging.info("appending revisions to " + HISTORIES_DB)
+    revisions.to_sql('revisions', con, index=False, if_exists='append')
+    con.close()
+
+
+def db_connection():
+    return sqlite3.connect('{}.sqlite'.format(HISTORIES_DB))
