@@ -126,13 +126,12 @@ def append_revisions(revisions):
     """ Append revisions to the database. """
     con = db_connection()
     logging.info("appending revisions to " + HISTORIES_DB)
-    revisions.to_sql('revisions', con, if_exists='append')
+    revisions.to_sql('revisions', con, index=False, if_exists='append')
     con.close()
 
 
 def db_connection():
     return sqlite3.connect('{}.sqlite'.format(HISTORIES_DB))
-
 
 
 def label_relationships(revisions):
@@ -145,7 +144,7 @@ def label_relationships(revisions):
     v1 -> v2 -> v1
 
     revid | parentid | sha1
-    -----------------------
+    ------+----------+-----
     1     | null     | abc
     2     | 1        | def
     3     | 2        | abc
@@ -153,7 +152,7 @@ def label_relationships(revisions):
     This function adds columns for the rev_sha1 and the parent_sha1.
 
     revid | rev_sha1 | parentid | parent_sha1
-    -----------------------------------------
+    ------+----------+----------+------------
     1     | abc      | null     | null
     2     | def      | 1        | abc
     3     | abc      | 2        | def

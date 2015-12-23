@@ -7,29 +7,16 @@ import wikivision
 
 wikivision.data.HISTORIES_DB = 'histories-test'
 
+
+# to_table
+# --------
+
 @pytest.fixture
 def json_revisions():
     return [
         {'a': [1, 2, 3], 'b': list('abc')},
         {'a': [4, 5, 6], 'b': list('def')},
     ]
-
-@pytest.fixture
-def revision_hashes():
-    return DataFrame({
-        'sha1': ['abc', 'def', 'abc', 'ghi'],
-        'parentid': [None, 0, 1, 2],
-        'revid': [0, 1, 2, 3]
-    })
-
-@pytest.fixture
-def test_db(request):
-    def fin():
-        os.remove('{}.sqlite'.format(wikivision.data.HISTORIES_DB))
-    request.addfinalizer(fin)
-
-# to_table
-# --------
 
 def test_to_table(json_revisions):
     revisions = wikivision.to_table(json_revisions)
@@ -61,6 +48,13 @@ def test_renaming_table_columns(json_revisions):
 
 # select_all
 # ----------
+
+@pytest.fixture
+def test_db(request):
+    def fin():
+        os.remove('{}.sqlite'.format(wikivision.data.HISTORIES_DB))
+    request.addfinalizer(fin)
+
 
 def _append_test_revisions(article_slug):
     revisions = DataFrame({'article_slug': [article_slug, ]})
@@ -95,6 +89,14 @@ def test_repeated_contents_are_dropped():
 # label_relationships
 # -------------------
 
+@pytest.fixture
+def revision_hashes():
+    return DataFrame({
+        'sha1': ['abc', 'def', 'abc', 'ghi'],
+        'parentid': [None, 0, 1, 2],
+        'revid': [0, 1, 2, 3]
+    })
+
 def test_label_relationships(revision_hashes):
     labeled = wikivision.label_relationships(revision_hashes)
     expected_new_cols = ['parent_sha1', 'rev_sha1']
@@ -103,6 +105,7 @@ def test_label_relationships(revision_hashes):
 
 # nest
 # ----
+
 @pytest.mark.xfail
 def test_nest_hashes(revision_hashes):
     nested = wikivision.nest(revision_hashes)
