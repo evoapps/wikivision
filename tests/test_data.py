@@ -55,7 +55,6 @@ def test_db(request):
         os.remove('{}.sqlite'.format(wikivision.data.HISTORIES_DB))
     request.addfinalizer(fin)
 
-
 def _append_test_revisions(article_slug):
     revisions = DataFrame({'article_slug': [article_slug, ]})
     wikivision.append_revisions(revisions)
@@ -90,25 +89,15 @@ def test_repeated_contents_are_dropped():
 # -------------------
 
 @pytest.fixture
-def revision_hashes():
-    return DataFrame({
-        'sha1': ['abc', 'def', 'abc', 'ghi'],
-        'parentid': [None, 0, 1, 2],
-        'revid': [0, 1, 2, 3]
-    })
+def revision_wikitext():
+    return DataFrame({'wikitext': ['abc', 'def', 'abc', 'ghi']})
 
-def test_label_relationships(revision_hashes):
-    labeled = wikivision.label_relationships(revision_hashes)
-    expected_new_cols = ['parent_sha1', 'rev_sha1']
-    assert all([new_col in labeled.columns for new_col in expected_new_cols])
-    assert 'sha1' not in labeled.columns
+def test_label_wikitext_id(revision_wikitext):
+    labeled = wikivision.label_wikitext_id(revision_wikitext)
+    ids = labeled.wikitext_id.tolist()
+    assert ids == [0, 1, 0, 2]
 
-# nest
-# ----
-
-@pytest.mark.xfail
-def test_nest_hashes(revision_hashes):
-    nested = wikivision.nest(revision_hashes)
-    assert nested['sha1'] == 'abc'
-    assert nested['version'] == 0
-    assert len(nested['children']) == 2
+def test_label_wikitext_parent_id(revision_wikitext):
+    labeled = wikivision.label_wikitext_parent_id(revision_wikitext)
+    parent_ids = labeled.wikitext_parent_id.tolist()
+    assert parent_ids == [-1, 0, 1, 0]

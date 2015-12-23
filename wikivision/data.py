@@ -1,8 +1,9 @@
 import logging
+from hashlib import sha1
 
-import sqlite3
 import pandas as pd
 import requests
+import sqlite3
 
 HISTORIES_DB = 'histories'
 
@@ -15,14 +16,14 @@ def get(article_slug, cache=True):
         json_revisions = request(article_slug)
         revisions = to_table(
             json_revisions,
-            columns=['parentid', 'revid', 'timestamp', 'sha1', '*'],
+            columns=['timestamp', '*'],
             id_vars={'article_slug': article_slug},
             renamer={'*': 'wikitext'},
         )
 
         revisions = drop_repeats(revisions)
         revisions = convert_timestamp_to_datetime(revisions)
-        revisions = label_relationships(revisions)
+        # revisions = label_relationships(revisions)
 
         if cache:
             append_revisions(revisions)
@@ -134,37 +135,27 @@ def convert_timestamp_to_datetime(revisions):
     return revisions
 
 
-def label_relationships(revisions):
-    """ Label parent and revision ids in terms of wikitext shas.
-
-    Each revision id is unique, but the shas are not. For example,
-    reverting to a previous version of the article returns the original
-    sha but not the original revision id.
-
-    v1 -> v2 -> v1
-
-    revid | parentid | sha1
-    ------+----------+-----
-    1     | null     | abc
-    2     | 1        | def
-    3     | 2        | abc
-
-    This function adds columns for the rev_sha1 and the parent_sha1.
-
-    revid | rev_sha1 | parentid | parent_sha1
-    ------+----------+----------+------------
-    1     | abc      | null     | null
-    2     | def      | 1        | abc
-    3     | abc      | 2        | def
-    """
+def label_wikitext_id(revisions):
     revisions = revisions.copy()
-    revisions.rename(columns={'sha1': 'rev_sha1'}, inplace=True)
-    id_to_sha = revisions[['revid', 'rev_sha1']].set_index('revid')
-    parent_sha = id_to_sha.\
-        rename(columns={'rev_sha1': 'parent_sha1'}).\
-        reindex(revisions.parentid).\
-        reset_index()
-    return revisions.merge(parent_sha)
+    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
+    revisions['wikitext_id'] = revisions.wikitext.apply(lambda x: id_map[x])
+    return revisions
+
+
+def label_wikitext_parent_id(revisions):
+    revisions = revisions.copy()
+    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
+    wikitext_parent_ids = []
+    wikitexts = revisions.wikitext.tolist()
+    for i, wikitext in enumerate(wikitexts):
+        if i == 0:
+            wikitext_parent_ids.append(-1)
+        else:
+            parent_wikitext = wikitexts[i-1]
+            parent_wikitext_id = id_map[parent_wikitext]
+            wikitext_parent_ids.append(parent_wikitext_id)
+    revisions['wikitext_parent_id'] = wikitext_parent_ids
+    return revisions
 
 
 def append_revisions(revisions):
