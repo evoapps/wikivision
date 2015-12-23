@@ -1,5 +1,4 @@
 import logging
-from hashlib import sha1
 
 import pandas as pd
 import requests
