@@ -5,9 +5,15 @@ def tree_format(revisions):
     """ Convert a complete revision history to a tree format. """
     revisions = revisions.copy()
     revisions = drop_repeats(revisions)
-    revisions = label_wikitext_version(revisions)
-    tree_data = {'nodes': revisions.to_dict('records')}
-    return tree_data
+    revisions = label_version(revisions)
+    nodes = revisions.to_dict('records')
+
+    # remove parent info from root node
+    root = nodes[0]
+    root.pop('wikitext_parent_version')
+    nodes[0] = root
+
+    return nodes
 
 
 def drop_repeats(revisions):
@@ -45,4 +51,5 @@ def label_wikitext_parent_version(revisions):
             parent_wikitext_id = id_map[parent_wikitext]
             wikitext_parent_ids.append(parent_wikitext_id)
     revisions['wikitext_parent_version'] = wikitext_parent_ids
+    print('returning from wikitext parent version')
     return revisions

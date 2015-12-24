@@ -1,23 +1,25 @@
-var margin = {top: 40, right: 120, bottom: 20, left: 120},
-  width = 960 - margin.right - margin.left,
-  height = 500 - margin.top - margin.bottom;
+function nestNodeList(nodes) {
+  var nodeById = {};
 
-var i = 0;
+  // Index the nodes by id, in case they come out of order.
+  nodes.forEach(function(d) {
+    nodeById[d.wikitext_version] = d;
+  });
 
-var tree = d3.layout.tree()
-  .size([height, width]);
+  // Lazily compute children.
+  nodes.forEach(function(d) {
+    if ("wikitext_parent_version" in d) {
+      var parent = nodeById[d.wikitext_parent_version];
+      if (parent.children) parent.children.push(d);
+      else parent.children = [d];
+    }
+  });
 
-var diagonal = d3.svg.diagonal()
-  .projection(function(d) { return [d.x, d.y]; });
+  return nodes[0];
+}
 
-var svg = d3.select("body").append("svg")
-  .attr("width", width + margin.right + margin.left)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-function revisionTree(nodes) {
+function revisionTree(root) {
+  var i = 0;
 
   // Compute the new tree layout.
   var nodes = tree.nodes(root).reverse(),
@@ -45,7 +47,7 @@ function revisionTree(nodes) {
 		  return d.children || d._children ? -18 : 18; })
 	  .attr("dy", ".35em")
 	  .attr("text-anchor", "middle")
-	  .text(function(d) { return d.name; })
+	  .text(function(d) { return d.wikitext; })
 	  .style("fill-opacity", 1);
 
   // Declare the links…

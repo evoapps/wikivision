@@ -7,10 +7,32 @@
 </head>
 <body>
   <h1>wikivision</h1>
+  <svg></svg>
   <script>
+var root;
 var treeData = {{ tree_data | safe }};
-if ('nodes' in treeData) {
-  revisionTree(treeData['nodes']);
+
+var margin = {top: 40, right: 120, bottom: 20, left: 120},
+  width = 960 - margin.right - margin.left,
+  height = 500 - margin.top - margin.bottom;
+
+var i = 0;
+
+var tree = d3.layout.tree()
+  .size([height, width]);
+
+var diagonal = d3.svg.diagonal()
+  .projection(function(d) { return [d.x, d.y]; });
+
+var svg = d3.select("svg")
+  .attr("width", width + margin.right + margin.left)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+if ("nodes" in treeData) {
+  root = nestNodeList(treeData["nodes"])
+  revisionTree(root);
 }
   </script>
 </body>
