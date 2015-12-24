@@ -1,6 +1,6 @@
 import argparse
 
-from .app import app
+from .view import app
 
 
 def get_parser():
