@@ -13,19 +13,19 @@ def test_repeated_contents_are_dropped():
     assert all(no_repeats.wikitext == ['repeat', 'unique'])
     assert no_repeats.index.tolist() == [0, 2]
 
-# label_relationships
-# -------------------
+# label_versions
+# --------------
 
 @pytest.fixture
 def revision_wikitext():
-    return DataFrame({'wikitext': ['abc', 'def', 'abc', 'ghi']})
+    return DataFrame({'wikitext': list('abcbd')})
 
-def test_label_wikitext_id(revision_wikitext):
-    labeled = wikivision.label_wikitext_id(revision_wikitext)
-    ids = labeled.wikitext_id.tolist()
-    assert ids == [0, 1, 0, 2]
+def test_label_wikitext_version(revision_wikitext):
+    labeled = wikivision.label_version(revision_wikitext)
+    versions = labeled.wikitext_version.tolist()
+    assert versions == [0, 1, 2, 1, 3]
 
-def test_label_wikitext_parent_id(revision_wikitext):
-    labeled = wikivision.label_wikitext_parent_id(revision_wikitext)
-    parent_ids = labeled.wikitext_parent_id.tolist()
-    assert parent_ids == [-1, 0, 1, 0]
+def test_label_wikitext_parent_version(revision_wikitext):
+    labeled = wikivision.label_version(revision_wikitext)
+    parent_versions = labeled.wikitext_parent_version.tolist()
+    assert parent_versions == [-1, 0, 1, 2, 1]

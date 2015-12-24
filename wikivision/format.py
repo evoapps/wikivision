@@ -6,8 +6,7 @@ def tree_format(revisions):
     revisions = revisions.copy()
     revisions = drop_repeats(revisions)
     revisions = convert_timestamp_to_datetime(revisions)
-    revisions = label_wikitext_id(revisions)
-    revisions = label_wikitext_parent_id(revisions)
+    revisions = label_wikitext_version(revisions)
     tree_data = {'data': revisions.to_dict('records')}
     return tree_data
 
@@ -26,14 +25,22 @@ def convert_timestamp_to_datetime(revisions):
     return revisions
 
 
-def label_wikitext_id(revisions):
+def label_version(revisions):
+    """ Label the unique versions of an article. """
     revisions = revisions.copy()
-    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
-    revisions['wikitext_id'] = revisions.wikitext.apply(lambda x: id_map[x])
+    revisions = label_wikitext_version(revisions)
+    revisions = label_wikitext_parent_version(revisions)
     return revisions
 
 
-def label_wikitext_parent_id(revisions):
+def label_wikitext_version(revisions):
+    revisions = revisions.copy()
+    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
+    revisions['wikitext_version'] = revisions.wikitext.apply(lambda x: id_map[x])
+    return revisions
+
+
+def label_wikitext_parent_version(revisions):
     revisions = revisions.copy()
     id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
     wikitext_parent_ids = []
@@ -45,5 +52,5 @@ def label_wikitext_parent_id(revisions):
             parent_wikitext = wikitexts[i-1]
             parent_wikitext_id = id_map[parent_wikitext]
             wikitext_parent_ids.append(parent_wikitext_id)
-    revisions['wikitext_parent_id'] = wikitext_parent_ids
+    revisions['wikitext_parent_version'] = wikitext_parent_ids
     return revisions
