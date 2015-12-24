@@ -8,7 +8,12 @@ HISTORIES_DB = 'histories'
 
 
 def get_article_revisions(article_slug):
-    """ Retrieve the revisions for a Wikipedia article. """
+    """ Retrieve all revisions made to a Wikipedia article.
+
+    :param article_slug: str The name of Wikipedia article to retrieve in slug
+        form, which means that all spaces have been replaced with underscores.
+    :rtype: pd.DataFrame
+    """
     try:
         revisions = select_revisions_by_article(article_slug)
     except LookupError:
