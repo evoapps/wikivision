@@ -1,2 +1,3 @@
-from .get import get_article_revisions
-from .format import tree_format
+from .get import *
+from .format import *
+from .view import app
