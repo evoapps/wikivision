@@ -138,6 +138,17 @@ def to_table(json_revisions, columns=None, id_vars=None, renamer=None):
     revisions = revisions[columns]
     if renamer:
         revisions.rename(columns=renamer, inplace=True)
+
+    if 'timestamp' in columns:
+        revisions = convert_timestamp_to_datetime(revisions)
+
+    return revisions
+
+
+def convert_timestamp_to_datetime(revisions):
+    revisions = revisions.copy()
+    revisions['timestamp'] = pd.to_datetime(revisions.timestamp)
+    revisions.sort_values(by='timestamp', inplace=True)
     return revisions
 
 

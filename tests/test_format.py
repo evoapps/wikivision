@@ -29,3 +29,6 @@ def test_label_wikitext_parent_version(revision_wikitext):
     labeled = wikivision.label_version(revision_wikitext)
     parent_versions = labeled.wikitext_parent_version.tolist()
     assert parent_versions == [-1, 0, 1, 2, 1]
+
+# tree_format
+# -----------

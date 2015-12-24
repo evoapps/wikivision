@@ -5,9 +5,8 @@ def tree_format(revisions):
     """ Convert a complete revision history to a tree format. """
     revisions = revisions.copy()
     revisions = drop_repeats(revisions)
-    revisions = convert_timestamp_to_datetime(revisions)
     revisions = label_wikitext_version(revisions)
-    tree_data = {'data': revisions.to_dict('records')}
+    tree_data = {'nodes': revisions.to_dict('records')}
     return tree_data
 
 
@@ -16,13 +15,6 @@ def drop_repeats(revisions):
     revisions['is_repeat'] = revisions.wikitext[1:] == revisions.wikitext[:-1]
     revisions.fillna(False, inplace=True)
     return revisions.ix[~revisions.is_repeat].drop('is_repeat', axis=1)
-
-
-def convert_timestamp_to_datetime(revisions):
-    revisions = revisions.copy()
-    revisions['timestamp'] = pd.to_datetime(revisions.timestamp)
-    revisions.sort_values(by='timestamp', inplace=True)
-    return revisions
 
 
 def label_version(revisions):
