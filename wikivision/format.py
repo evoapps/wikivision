@@ -1,4 +1,3 @@
-import pandas as pd
 
 
 def tree_format(revisions):
@@ -53,3 +52,9 @@ def label_wikitext_parent_version(revisions):
     revisions['wikitext_parent_version'] = wikitext_parent_ids
     print('returning from wikitext parent version')
     return revisions
+
+
+def drop_reversions(revisions):
+    is_reversion = (revisions.wikitext_version <
+                    revisions.wikitext_parent_version)
+    return revisions.ix[~is_reversion]

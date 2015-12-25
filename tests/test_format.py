@@ -30,6 +30,22 @@ def test_label_wikitext_parent_version(revision_wikitext):
     parent_versions = labeled.wikitext_parent_version.tolist()
     assert parent_versions == [-1, 0, 1, 2, 1]
 
+# drop_reversions
+# ---------------
+
+@pytest.fixture
+def labeled_revisions():
+    return DataFrame({
+        'wikitext': list('abcbd'),
+        'wikitext_version': [0, 1, 2, 1, 3],
+        'wikitext_parent_version': [-1, 0, 1, 2, 1]
+    })
+
+def test_drop_reversions(labeled_revisions):
+    forward = wikivision.drop_reversions(labeled_revisions)
+    assert len(forward) == 4
+    assert forward.wikitext.tolist() == list('abcd')
+
 # tree_format
 # -----------
 

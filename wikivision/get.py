@@ -10,8 +10,7 @@ HISTORIES_DB = 'histories'
 def get_article_revisions(article_slug):
     """ Retrieve all revisions made to a Wikipedia article.
 
-    :param article_slug: str The name of Wikipedia article to retrieve in slug
-        form, which means that all spaces have been replaced with underscores.
+    :param article_slug: str The name of Wikipedia article as a slug.
     :rtype: pd.DataFrame
     """
     try:
