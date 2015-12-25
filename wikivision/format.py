@@ -1,3 +1,4 @@
+import logging
 
 
 def tree_format(revisions):
@@ -5,6 +6,7 @@ def tree_format(revisions):
     revisions = revisions.copy()
     revisions = drop_repeats(revisions)
     revisions = label_version(revisions)
+    revisions = drop_reversions(revisions)
     nodes = revisions.to_dict('records')
 
     # remove parent info from root node
@@ -17,27 +19,28 @@ def tree_format(revisions):
 
 def drop_repeats(revisions):
     revisions = revisions.copy()
-    revisions['is_repeat'] = revisions.wikitext[1:] == revisions.wikitext[:-1]
+    is_repeat = revisions.wikitext[1:] == revisions.wikitext[:-1]
+    revisions['is_repeat'] = is_repeat
     revisions.fillna(False, inplace=True)
+    logging.info('dropping {} repeat revisions'.format(is_repeat.sum()))
     return revisions.ix[~revisions.is_repeat].drop('is_repeat', axis=1)
 
 
 def label_version(revisions):
     """ Label the unique versions of an article. """
-    revisions = revisions.copy()
-    revisions = label_wikitext_version(revisions)
-    revisions = label_wikitext_parent_version(revisions)
+    revisions = _label_wikitext_version(revisions)
+    revisions = _label_wikitext_parent_version(revisions)
     return revisions
 
 
-def label_wikitext_version(revisions):
+def _label_wikitext_version(revisions):
     revisions = revisions.copy()
     id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
     revisions['wikitext_version'] = revisions.wikitext.apply(lambda x: id_map[x])
     return revisions
 
 
-def label_wikitext_parent_version(revisions):
+def _label_wikitext_parent_version(revisions):
     revisions = revisions.copy()
     id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
     wikitext_parent_ids = []
@@ -50,11 +53,11 @@ def label_wikitext_parent_version(revisions):
             parent_wikitext_id = id_map[parent_wikitext]
             wikitext_parent_ids.append(parent_wikitext_id)
     revisions['wikitext_parent_version'] = wikitext_parent_ids
-    print('returning from wikitext parent version')
     return revisions
 
 
 def drop_reversions(revisions):
     is_reversion = (revisions.wikitext_version <
                     revisions.wikitext_parent_version)
+    logging.info('dropping {} reversions'.format(is_reversion.sum()))
     return revisions.ix[~is_reversion]
