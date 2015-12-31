@@ -5,12 +5,9 @@ from pandas import DataFrame
 
 import wikivision
 
-wikivision.get.HISTORIES_DB = 'histories-test'
-
-# Testing interactions with the database
 
 @pytest.fixture
-def db(request):
+def db_con(request):
     test_db_name = 'histories-test'
     db_con = wikivision.connect_db(test_db_name)
     def delete_db():
@@ -20,7 +17,6 @@ def db(request):
     return db_con
 
 # to_table
-# --------
 
 @pytest.fixture
 def json_revisions():
@@ -38,9 +34,10 @@ def test_column_order(json_revisions):
     rev_columns = list(reversed(columns))
 
     revisions = wikivision.to_table(json_revisions, columns=columns)
+    rev_revisions = wikivision.to_table(json_revisions, columns=rev_columns)
+
     assert revisions.columns.tolist() == columns
-    revisions = wikivision.to_table(json_revisions, columns=rev_columns)
-    assert revisions.columns.tolist() == rev_columns
+    assert rev_revisions.columns.tolist() == rev_columns 
 
 def test_adding_keys_to_table(json_revisions):
     id_vars = {
@@ -64,18 +61,18 @@ def _append_test_revisions(article_slug, db_con):
     revisions = DataFrame({'article_slug': [article_slug, ]})
     wikivision.append_revisions(revisions, db_con)
 
-def test_select_revisions_by_article(db):
+def test_select_revisions_by_article(db_con):
     test_slug = 'test_slug'
-    _append_test_revisions(test_slug, db)
-    revisions = wikivision.select_revisions_by_article(test_slug, db)
+    _append_test_revisions(test_slug, db_con)
+    revisions = wikivision.select_revisions_by_article(test_slug, db_con)
     assert len(revisions) == 1
 
-def test_select_single_article(db):
+def test_select_single_article(db_con):
     slug1 = 'slug1'
     slug2 = 'slug2'
 
-    _append_test_revisions(slug1, db)
-    _append_test_revisions(slug2, db)
+    _append_test_revisions(slug1, db_con)
+    _append_test_revisions(slug2, db_con)
 
-    revisions = wikivision.select_revisions_by_article(slug1, db)
+    revisions = wikivision.select_revisions_by_article(slug1, db_con)
     assert len(revisions) == 1
