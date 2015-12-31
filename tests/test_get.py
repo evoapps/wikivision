@@ -12,17 +12,12 @@ wikivision.get.HISTORIES_DB = 'histories-test'
 @pytest.fixture
 def db(request):
     test_db_name = 'histories-test'
+    db_con = wikivision.connect_db(test_db_name)
     def delete_db():
+        db_con.close()
         os.remove('{}.sqlite'.format(test_db_name))
     request.addfinalizer(delete_db)
-
-def test_creating_a_sqlite_database_connector(db):
-    test_db_name = 'histories-test'
-    test_db_path = test_db_name + '.sqlite'
-    assert not os.path.isdir(test_db_path),\
-        test_db_path + 'should not exist'
-    data = wikivision.make_db(test_db_name)
-    assert os.path.isdir(test_db_path)
+    return db_con
 
 # to_table
 # --------
@@ -65,22 +60,22 @@ def test_renaming_table_columns(json_revisions):
 # select_revisions_by_article
 # ---------------------------
 
-def _append_test_revisions(article_slug):
+def _append_test_revisions(article_slug, db_con):
     revisions = DataFrame({'article_slug': [article_slug, ]})
-    wikivision.append_revisions(revisions)
+    wikivision.append_revisions(revisions, db_con)
 
 def test_select_revisions_by_article(db):
     test_slug = 'test_slug'
-    _append_test_revisions(test_slug)
-    revisions = wikivision.select_revisions_by_article(test_slug)
+    _append_test_revisions(test_slug, db)
+    revisions = wikivision.select_revisions_by_article(test_slug, db)
     assert len(revisions) == 1
 
 def test_select_single_article(db):
     slug1 = 'slug1'
     slug2 = 'slug2'
 
-    _append_test_revisions(slug1)
-    _append_test_revisions(slug2)
+    _append_test_revisions(slug1, db)
+    _append_test_revisions(slug2, db)
 
-    revisions = wikivision.select_revisions_by_article(slug1)
+    revisions = wikivision.select_revisions_by_article(slug1, db)
     assert len(revisions) == 1

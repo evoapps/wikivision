@@ -7,41 +7,43 @@ import sqlite3
 HISTORIES_DB = 'histories'
 
 
-def get_article_revisions(article_slug):
+def connect_db(name):
+    """Return a connection to the databse."""
+    return sqlite3.connect('{}.sqlite'.format(name))
+
+
+def get_article_revisions(article_slug, db_con):
     """Retrieve all revisions made to a Wikipedia article.
 
     Args:
         article_slug: The name of the Wikipedia article to retrieve.
+        db_con: An open connection to the database.
     Returns:
         A pandas.DataFrame of revisions where each row is a version of
         the article.
     """
     try:
-        revisions = select_revisions_by_article(article_slug)
+        revisions = select_revisions_by_article(article_slug, db_con)
     except LookupError:
-        logging.info('revisions for {} not found in {}.sqlite'.format(
-            article_slug, HISTORIES_DB,
-        ))
+        logging.info('revisions for {} not found'.format(article_slug))
         revisions = make_revisions_table(article_slug)
-        append_revisions(revisions)
+        append_revisions(revisions, db_con)
     else:
-        logging.info('returning revisions for {} found in {}.sqlite'.format(
-            article_slug, HISTORIES_DB
-        ))
+        logging.info('returning revisions for {}'.format(article_slug))
     return revisions
 
 
-def select_revisions_by_article(article_slug):
+def select_revisions_by_article(article_slug, db_con):
     """Query the database for all revisions made to a particular article.
     
     Args:
         article_slug: The name of the Wikipedia article to retrieve from
             the database.
+        db_con: An open connection to the database.
     Returns:
         A pandas.DataFrame of revisions where each row is a version of
         the article.
     """
-    db_con = connect_db()
     query = "SELECT * from revisions WHERE article_slug='{}'".format(
         article_slug
     )
@@ -53,8 +55,6 @@ def select_revisions_by_article(article_slug):
         if len(revisions) == 0:
             raise LookupError('no rows for article {}'.format(article_slug))
         return revisions
-    finally:
-        db_con.close()
 
 
 def make_revisions_table(article_slug):
@@ -194,14 +194,7 @@ def convert_timestamp_to_datetime(revisions):
     return revisions
 
 
-def append_revisions(revisions):
+def append_revisions(revisions, db_con):
     """Append revisions to the database."""
-    db_con = connect_db()
     logging.info('appending revisions to {}.sqlite'.format(HISTORIES_DB))
     revisions.to_sql('revisions', db_con, index=False, if_exists='append')
-    db_con.close()
-
-
-def connect_db():
-    """Return a connection to the database."""
-    return sqlite3.connect('{}.sqlite'.format(HISTORIES_DB))
