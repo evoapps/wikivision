@@ -51,6 +51,9 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
+notebooks:
+	jupyter nbconvert --to rst --output visualizing-article-histories.rst ../notebooks/visualizing-article-histories.ipynb
+
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo

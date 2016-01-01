@@ -6,13 +6,19 @@
 Welcome to wikivision's documentation!
 ======================================
 
-.. automodule:: wikivision.data
+.. automodule:: wikivision.get
    :members:
+
+.. automodule:: wikivision.format
+   :members:
+
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+
+   visualizing-article-histories.rst
 
 
 
