@@ -4,11 +4,9 @@ import pandas as pd
 import requests
 import sqlite3
 
-HISTORIES_DB = 'histories'
-
 
 def connect_db(name):
-    """Return a connection to the databse."""
+    """Return a connection to the database."""
     return sqlite3.connect('{}.sqlite'.format(name))
 
 
@@ -35,7 +33,7 @@ def get_article_revisions(article_slug, db_con):
 
 def select_revisions_by_article(article_slug, db_con):
     """Query the database for all revisions made to a particular article.
-    
+
     Args:
         article_slug: The name of the Wikipedia article to retrieve from
             the database.
@@ -59,7 +57,7 @@ def select_revisions_by_article(article_slug, db_con):
 
 def make_revisions_table(article_slug):
     """Assemble article histories into a table of revisions.
-    
+
     Args:
         article_slug: The name of the Wikipedia article to request
             from the Wikipedia API and turn into a table of revisions.
@@ -80,7 +78,7 @@ def make_revisions_table(article_slug):
 
 def request(article_slug):
     """Request complete revision histories from the Wikipedia API.
-    
+
     Args:
         article_slug: The name of the Wikipedia article to request
             from the Wikipedia API.
@@ -196,5 +194,5 @@ def convert_timestamp_to_datetime(revisions):
 
 def append_revisions(revisions, db_con):
     """Append revisions to the database."""
-    logging.info('appending revisions to {}.sqlite'.format(HISTORIES_DB))
+    logging.info('appending revisions to database')
     revisions.to_sql('revisions', db_con, index=False, if_exists='append')
