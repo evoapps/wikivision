@@ -6,7 +6,15 @@ import sqlite3
 
 
 def connect_db(name):
-    """Return a connection to the database."""
+    """Return a connection to the database.
+
+    Example usage::
+
+        db_con = connect_db('histories')
+        # ... interact with the database
+        db_con.close()
+
+    """
     return sqlite3.connect('{}.sqlite'.format(name))
 
 
