@@ -8,6 +8,7 @@ import wikivision
 
 @pytest.fixture
 def db_con(request):
+    """Setup and teardown a sqlite database."""
     test_db_name = 'histories-test'
     db_con = wikivision.connect_db(test_db_name)
     def delete_db():
@@ -21,16 +22,17 @@ def db_con(request):
 
 @pytest.fixture
 def json_revisions():
+    """Example list of revisions assembled from json responses."""
     return [
         {'a': [1, 2, 3], 'b': list('abc')},
         {'a': [4, 5, 6], 'b': list('def')},
     ]
 
-def test_to_table(json_revisions):
+def test_to_table_returns_a_dataframe(json_revisions):
     revisions = wikivision.to_table(json_revisions)
     assert isinstance(revisions, DataFrame)
 
-def test_column_order(json_revisions):
+def test_setting_column_order(json_revisions):
     columns = ['a', 'b']
     rev_columns = list(reversed(columns))
 
@@ -40,7 +42,7 @@ def test_column_order(json_revisions):
     assert revisions.columns.tolist() == columns
     assert rev_revisions.columns.tolist() == rev_columns 
 
-def test_adding_keys_to_table(json_revisions):
+def test_adding_id_vars_to_table(json_revisions):
     id_vars = {
         'slug': 'testing_123',
         'name': 'Testing 123',
