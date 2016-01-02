@@ -4,6 +4,8 @@ import pandas as pd
 import requests
 import sqlite3
 
+from wikivision import format
+
 
 def connect_db(name):
     """Return a connection to the database.
@@ -74,13 +76,13 @@ def make_revisions_table(article_slug):
         the article.
     """
     json_revisions = request(article_slug)
-    logging.info('converting response data to table')
     revisions = to_table(
         json_revisions,
-        columns=['timestamp', '*'],
         id_vars={'article_slug': article_slug},
+        columns=['timestamp', '*'],
         renamer={'*': 'wikitext'},
     )
+    revisions = format.clean(revisions)
     return revisions
 
 
@@ -153,50 +155,42 @@ def unearth_revisions(response):
     return list(response['query']['pages'].values())[0]['revisions']
 
 
-def to_table(json_revisions, columns=None, id_vars=None, renamer=None):
+def to_table(json_revisions, id_vars=None, columns=None, renamer=None):
     """Convert a list of revision data to a formatted table.
 
-    Columns are selected before renaming.
+    Other than the data, all arguments are optional. By default, all data is
+    put into the table without additional identifiers, rearranging, or
+    renaming. The order of operations matters.
 
     Args:
         json_revisions: A list of revisions as dicts returned from `request`.
-        columns: A list of dict key names in order. Defaults to using all
-            available columns.
         id_vars: A dict of new column names to new column values to add
             to the resulting pandas.DataFrame.
+        columns: A list of dict key names in order. Defaults to using all
+            available columns.
         renamer: A dict or func. Given the old column name, returns the new
             name of the column. Good for renaming bad column names from the
             API.
     """
     revisions = pd.DataFrame.from_records(json_revisions)
-    columns = columns or revisions.columns.tolist()
+
     if id_vars:
-        for name, value in id_vars.items():
-            revisions[name] = value
-            if name not in columns:
-                columns.insert(0, name)
-    revisions = revisions[columns]
+        revisions = insert_id_vars(revisions, id_vars)
+
+    if columns:
+        revisions = revisions[columns]
+
     if renamer:
         revisions.rename(columns=renamer, inplace=True)
-
-    if 'timestamp' in columns:
-        revisions = convert_timestamp_to_datetime(revisions)
 
     return revisions
 
 
-def convert_timestamp_to_datetime(revisions):
-    """Convert column of timestamps as strings to datetime objects.
-
-    Args:
-        revisions: A pandas.DataFrame of revisions containing a column
-            'timestamp' with strings to convert to datetime objects.
-    Returns:
-        A copy of revisions with the timestamp column replaced.
-    """
+def insert_id_vars(revisions, id_vars):
+    """Insert identifiers into the revisions."""
     revisions = revisions.copy()
-    revisions['timestamp'] = pd.to_datetime(revisions.timestamp)
-    revisions.sort_values(by='timestamp', inplace=True)
+    for name, value in id_vars.items():
+        revisions.insert(0, column=name, value=value)
     return revisions
 
 

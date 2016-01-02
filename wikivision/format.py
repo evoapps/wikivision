@@ -1,5 +1,26 @@
 import logging
 
+def clean(revisions):
+    if 'timestamp' in revisions:
+        revisions = convert_timestamp_to_datetime(revisions)
+
+    return revisions
+
+
+def convert_timestamp_to_datetime(revisions):
+    """Convert column of timestamps as strings to datetime objects.
+
+    Args:
+        revisions: A pandas.DataFrame of revisions containing a column
+            'timestamp' with strings to convert to datetime objects.
+    Returns:
+        A copy of revisions with the timestamp column replaced.
+    """
+    revisions = revisions.copy()
+    revisions['timestamp'] = pd.to_datetime(revisions.timestamp)
+    revisions.sort_values(by='timestamp', inplace=True)
+    return revisions
+
 
 def tree_format(revisions):
     """Convert a complete revision history to a tree format.
