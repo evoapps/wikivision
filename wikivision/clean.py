@@ -1,6 +1,7 @@
 import logging
 
-def clean(revisions):
+
+def tidy_article_revisions(revisions):
     """Cleans a table full of revisions in an opinionated way."""
     revisions = revisions.copy()
 

@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import sqlite3
 
-from wikivision import format
+from wikivision import clean
 
 
 def connect_db(name):
@@ -82,7 +82,7 @@ def make_revisions_table(article_slug):
         columns=['timestamp', '*'],
         renamer={'*': 'wikitext'},
     )
-    revisions = format.clean(revisions)
+    revisions = clean.tidy_article_revisions(revisions)
     return revisions
 
 
