@@ -79,8 +79,8 @@ def make_revisions_table(article_slug):
     revisions = to_table(
         json_revisions,
         id_vars={'article_slug': article_slug},
-        columns=['timestamp', '*'],
-        renamer={'*': 'wikitext'},
+        columns=['revid', 'parentid', 'timestamp', '*'],
+        renamer={'revid': 'rev_id', 'parentid': 'parent_id', '*': 'wikitext'},
     )
     revisions = clean.tidy_article_revisions(revisions)
     return revisions
@@ -130,10 +130,10 @@ def compile_revision_request_kwargs(titles, **kwargs):
     if 'rvprops' in kwargs:
         rvprops = kwargs.pop('rvprops')
     else:
+        # sensible defaults
         rvprops = [
             'ids',
             'timestamp',
-            'sha1',
             'content',
         ]
 
@@ -146,6 +146,7 @@ def compile_revision_request_kwargs(titles, **kwargs):
         rvsection=0,
         titles=titles
     )
+
     request_kwargs.update(kwargs)
     return request_kwargs
 
