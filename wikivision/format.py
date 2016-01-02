@@ -1,8 +1,15 @@
 import logging
 
 def clean(revisions):
+    """Cleans a table full of revisions in an opinionated way."""
+    revisions = revisions.copy()
+
+    # convert objects
     if 'timestamp' in revisions:
         revisions = convert_timestamp_to_datetime(revisions)
+
+    # process wikitext
+    revisions = label_version(revisions)
 
     return revisions
 
@@ -31,10 +38,9 @@ def tree_format(revisions):
         A root node (a dict) with children nodes containg all versions of the
         article.
     """
-    revisions = revisions.copy()
     revisions = drop_repeats(revisions)
-    revisions = label_version(revisions)
     revisions = drop_reversions(revisions)
+
     nodes = revisions.to_dict('records')
 
     # remove parent info from root node

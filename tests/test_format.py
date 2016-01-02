@@ -49,8 +49,8 @@ def test_drop_reversions(labeled_revisions):
 # tree_format
 # -----------
 
-def test_parent_version_is_dropped_from_root_node(revision_wikitext):
-    tree_data = wikivision.tree_format(revision_wikitext)
+def test_parent_version_is_dropped_from_root_node(labeled_revisions):
+    tree_data = wikivision.tree_format(labeled_revisions)
     root = tree_data[0]
     assert 'wikitext_parent_version' not in root
     assert all(['wikitext_parent_version' in node for node in tree_data[1:]])
