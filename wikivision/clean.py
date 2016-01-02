@@ -27,15 +27,30 @@ def label_version(revisions):
         A copy of revisions with new columns that label the current version
         and the version of the parent.
     """
-    versions = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
-    versions['sha1'] = versions.wikitext.apply(_hash)
+    revisions = revisions.copy()
 
-    revisions = _label_wikitext_version(revisions)
-    revisions = _label_wikitext_parent_version(revisions)
+    # efficiently create a mapping from id to wikitext to sha1
+    hashes = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
+    hashes['sha1'] = hashes.wikitext.apply(_hash)
+    ids = revisions[['rev_id', 'wikitext']].rename(columns={'rev_id': 'id'})
+    versions = ids.merge(hashes).set_index('id')
+
+    def label_hashes_from_ids(ids):
+        """Given ids, return the wikitext hash."""
+        return versions.reindex(ids)['sha1']
+
+    revisions.insert(2, 'rev_sha1',
+                     label_hashes_from_ids(revisions.rev_id))
+    revisions.insert(3, 'parent_sha1',
+                     label_hashes_from_ids(revisions.parent_id))
+
     return revisions
 
 
 def _hash(wikitext):
+    # don't try to hash missing values
+    if pd.isnull(wikitext):
+        return wikitext
     return hashlib.sha1(bytes(wikitext, 'utf-8')).hexdigest()
 
 
