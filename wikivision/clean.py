@@ -1,8 +1,11 @@
+import hashlib
 import logging
+
+import pandas as pd
 
 
 def tidy_article_revisions(revisions):
-    """Cleans a table full of revisions in an opinionated way."""
+    """Cleans a table full of revisions. Opinionated!"""
     revisions = revisions.copy()
 
     # convert objects
@@ -15,6 +18,48 @@ def tidy_article_revisions(revisions):
     return revisions
 
 
+def label_version(revisions):
+    """Label the unique versions of an article.
+
+    Args:
+        revisions: A pandas.DataFrame of revisions to an article.
+    Returns:
+        A copy of revisions with new columns that label the current version
+        and the version of the parent.
+    """
+    versions = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
+    versions['sha1'] = versions.wikitext.apply(_hash)
+
+    revisions = _label_wikitext_version(revisions)
+    revisions = _label_wikitext_parent_version(revisions)
+    return revisions
+
+
+def _hash(wikitext):
+    return hashlib.sha1(bytes(wikitext, 'utf-8')).hexdigest()
+
+
+def _label_wikitext_version(revisions):
+    revisions = revisions.copy()
+    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
+    revisions['wikitext_version'] = revisions.wikitext.apply(lambda x: id_map[x])
+    return revisions
+
+
+def _label_wikitext_parent_version(revisions):
+    revisions = revisions.copy()
+    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
+    wikitext_parent_ids = []
+    wikitexts = revisions.wikitext.tolist()
+    for i, wikitext in enumerate(wikitexts):
+        if i == 0:
+            wikitext_parent_ids.append(-1)
+        else:
+            parent_wikitext = wikitexts[i-1]
+            parent_wikitext_id = id_map[parent_wikitext]
+            wikitext_parent_ids.append(parent_wikitext_id)
+    revisions['wikitext_parent_version'] = wikitext_parent_ids
+    return revisions
 def convert_timestamp_to_datetime(revisions):
     """Convert column of timestamps as strings to datetime objects.
 
@@ -86,38 +131,3 @@ def drop_reversions(revisions):
     return revisions.ix[~is_reversion]
 
 
-def label_version(revisions):
-    """Label the unique versions of an article.
-
-    Args:
-        revisions: A pandas.DataFrame of revisions to an article.
-    Returns:
-        A copy of revisions with new columns that label the current version
-        and the version of the parent.
-    """
-    revisions = _label_wikitext_version(revisions)
-    revisions = _label_wikitext_parent_version(revisions)
-    return revisions
-
-
-def _label_wikitext_version(revisions):
-    revisions = revisions.copy()
-    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
-    revisions['wikitext_version'] = revisions.wikitext.apply(lambda x: id_map[x])
-    return revisions
-
-
-def _label_wikitext_parent_version(revisions):
-    revisions = revisions.copy()
-    id_map = {wikitext: i for i, wikitext in enumerate(revisions.wikitext.unique())}
-    wikitext_parent_ids = []
-    wikitexts = revisions.wikitext.tolist()
-    for i, wikitext in enumerate(wikitexts):
-        if i == 0:
-            wikitext_parent_ids.append(-1)
-        else:
-            parent_wikitext = wikitexts[i-1]
-            parent_wikitext_id = id_map[parent_wikitext]
-            wikitext_parent_ids.append(parent_wikitext_id)
-    revisions['wikitext_parent_version'] = wikitext_parent_ids
-    return revisions

@@ -3,16 +3,6 @@ from pandas import DataFrame
 
 import wikivision
 
-# drop_repeats
-# ------------
-
-def test_repeated_contents_are_dropped():
-    revisions = DataFrame({'wikitext': ['repeat', 'repeat', 'unique']})
-    no_repeats = wikivision.drop_repeats(revisions)
-    assert len(no_repeats) == 2
-    assert all(no_repeats.wikitext == ['repeat', 'unique'])
-    assert no_repeats.index.tolist() == [0, 2]
-
 # label_versions
 # --------------
 
@@ -29,6 +19,17 @@ def test_label_wikitext_parent_version(revision_wikitext):
     labeled = wikivision.label_version(revision_wikitext)
     parent_versions = labeled.wikitext_parent_version.tolist()
     assert parent_versions == [-1, 0, 1, 2, 1]
+
+
+# drop_repeats
+# ------------
+
+def test_repeated_contents_are_dropped():
+    revisions = DataFrame({'wikitext': ['repeat', 'repeat', 'unique']})
+    no_repeats = wikivision.drop_repeats(revisions)
+    assert len(no_repeats) == 2
+    assert all(no_repeats.wikitext == ['repeat', 'unique'])
+    assert no_repeats.index.tolist() == [0, 2]
 
 # drop_reversions
 # ---------------
