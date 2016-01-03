@@ -11,6 +11,16 @@ def revision_wikitext():
     revisions['parent_id'] = revisions.rev_id - 1
     return revisions
 
+
+@pytest.fixture
+def timestamped_revisions():
+    timestamps = ['2000-01-{}'.format(d) for d in range(1, 7)]
+    revisions = pd.DataFrame({
+        'wikitext': list('aabbab'),
+        'timestamp': pd.to_datetime(timestamps),
+    })
+    return revisions
+
 @pytest.fixture
 def labeled_revisions():
     return pd.DataFrame({
@@ -63,19 +73,33 @@ def test_require_complete_revision_history():
         'rev_id': [1, 3, 4],
         'parent_id': [0, 2, 3],
     })
-    with pytest.raises(wikivision.IncompleteRevisionHistory):
+    with pytest.raises(wikivision.IncompleteRevisionHistoryError):
         wikivision.label_version(incomplete_revisions)
 
 
 # drop_repeats
 # ------------
 
-def test_repeated_contents_are_dropped():
-    revisions = pd.DataFrame({'wikitext': ['repeat', 'repeat', 'unique']})
-    no_repeats = wikivision.drop_repeats(revisions)
-    assert len(no_repeats) == 2
-    assert all(no_repeats.wikitext == ['repeat', 'unique'])
-    assert no_repeats.index.tolist() == [0, 2]
+def test_dropping_repeats_requires_timestamp(timestamped_revisions):
+    timestamped_revisions.drop('timestamp', axis=1, inplace=True)
+    with pytest.raises(wikivision.MissingRequiredColumnError):
+        wikivision.drop_repeats(timestamped_revisions)
+
+
+def test_repeated_contents_are_dropped(timestamped_revisions):
+    no_repeats = wikivision.drop_repeats(timestamped_revisions)
+    assert len(no_repeats) == 4
+    assert all(no_repeats.wikitext == list('abab'))
+
+
+def test_detect_repeats_when_revisions_are_out_of_order(timestamped_revisions):
+    # rearrange index to minimize repeats
+    timestamped_revisions.index = [0, 2, 1, 3, 4, 5]
+    timestamped_revisions.sort_index(inplace=True)
+    no_repeats = wikivision.drop_repeats(timestamped_revisions)
+    assert len(no_repeats) == 4
+    assert all(no_repeats.wikitext == list('abab'))
+
 
 # drop_reversions
 # ---------------

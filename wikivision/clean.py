@@ -8,7 +8,10 @@ def tidy_article_revisions(revisions):
     """Clean a table of revisions.
 
     This is the central method for processing an article's revision
-    history that was retrieved from the Wikipedia API.
+    history that was retrieved from the Wikipedia API. It converts
+    objects to the correct type and adds columns that hash wikitext
+    versions. What is returned is the unique revision history of
+    an article.
 
     Args:
         revisions: A pandas.DataFrame of revisions.
@@ -29,6 +32,8 @@ def tidy_article_revisions(revisions):
 
     # process wikitext
     revisions = label_version(revisions)
+
+    # drop repeats
 
     return revisions
 
@@ -103,9 +108,6 @@ def tree_format(revisions):
         A root node (a dict) with children nodes containg all versions of the
         article.
     """
-    revisions = drop_repeats(revisions)
-    revisions = drop_reversions(revisions)
-
     nodes = revisions.to_dict('records')
 
     # remove parent info from root node
@@ -126,9 +128,18 @@ def drop_repeats(revisions):
 
     Returns:
         A copy of revisions with repeated rows removed.
+
+    Raises:
+        MissingRequiredColumnError: If revisions do not have a timestamp column.
     """
     revisions = revisions.copy()
-    is_repeat = revisions.wikitext[1:] == revisions.wikitext[:-1]
+
+    if 'timestamp' not in revisions:
+        raise MissingRequiredColumnError('timestamp required')
+
+    revisions.sort_values(by='timestamp', inplace=True)
+
+    is_repeat = revisions.wikitext.iloc[1:] == revisions.wikitext.iloc[:-1]
     revisions['is_repeat'] = is_repeat
     revisions.fillna(False, inplace=True)
     logging.info('dropping {} repeat revisions'.format(is_repeat.sum()))
@@ -153,3 +164,6 @@ def drop_reversions(revisions):
 
 class IncompleteRevisionHistoryError(Exception):
     """All revisions must be present for recreating article histories."""
+
+class MissingRequiredColumnError(Exception):
+    """An expected column was not present."""
