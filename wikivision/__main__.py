@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import argparse
 
-from .view import app
+from .app import app
 
 
 def get_parser():

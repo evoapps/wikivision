@@ -1,3 +1,4 @@
 from .get import *
 from .clean import *
-from .view import app
+from .view import *
+from .app import app
