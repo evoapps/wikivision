@@ -1,9 +1,9 @@
 import graphviz
 
 
-def to_graph(revisions):
+def revisions_to_graph(revisions):
     """Convert a revision history to a graphviz object."""
-    pass
+    return graphviz.Digraph()
 
 
 def tree_format(revisions):
