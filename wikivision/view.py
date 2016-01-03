@@ -1,9 +1,35 @@
 import graphviz
 
+from wikivision import exceptions
+
 
 def revisions_to_graph(revisions):
-    """Convert a revision history to a graphviz object."""
-    return graphviz.Digraph()
+    """Convert a revision history to a graphviz object.
+
+    Args:
+        revisions: A pandas.DataFrame of article revisions.
+
+    Returns:
+        A graphviz.Digraph object.
+
+    Raises:
+        MissingRequiredColumnError: if revisions doesn't have rev_sha1 or
+            parent_sha1 columns.
+    """
+    required = ['rev_sha1', 'parent_sha1']
+    if any([col not in revisions for col in required]):
+        raise exceptions.MissingRequiredColumnError()
+
+    graph = graphviz.Digraph()
+
+    for node in revisions.rev_sha1.unique():
+        graph.node(node)
+
+    edges = revisions[['parent_sha1', 'rev_sha1']].iloc[1:]
+    for _, (parent, current) in edges.iterrows():
+        graph.edge(parent, current)
+
+    return graph
 
 
 def tree_format(revisions):
@@ -24,4 +50,3 @@ def tree_format(revisions):
     nodes[0] = root
 
     return nodes
-

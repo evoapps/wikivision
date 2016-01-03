@@ -3,6 +3,8 @@ import logging
 
 import pandas as pd
 
+from wikivision import exceptions
+
 
 def tidy_article_revisions(revisions):
     """Clean a table of revisions.
@@ -54,7 +56,7 @@ def label_version(revisions):
 
     # Check that the revision history is complete.
     if (~revisions.parent_id.isin(revisions.rev_id.values)).sum() > 1:
-        raise IncompleteRevisionHistoryError()
+        raise exceptions.IncompleteRevisionHistoryError()
 
     # Efficiently create a mapping from id to wikitext to sha1.
 
@@ -115,7 +117,7 @@ def drop_repeats(revisions):
     revisions = revisions.copy()
 
     if 'timestamp' not in revisions:
-        raise MissingRequiredColumnError('timestamp required')
+        raise exceptions.MissingRequiredColumnError('timestamp required')
 
     revisions.sort_values(by='timestamp', inplace=True)
 
@@ -141,11 +143,3 @@ def drop_reversions(revisions):
                     revisions.wikitext_parent_version)
     logging.info('dropping {} reversions'.format(is_reversion.sum()))
     return revisions.ix[~is_reversion]
-
-
-class IncompleteRevisionHistoryError(Exception):
-    """All revisions must be present for recreating article histories."""
-
-
-class MissingRequiredColumnError(Exception):
-    """An expected column was not present."""
