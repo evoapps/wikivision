@@ -3,8 +3,6 @@ import pandas as pd
 
 import wikivision
 
-# label_versions
-# --------------
 
 @pytest.fixture
 def revision_wikitext():
@@ -12,6 +10,17 @@ def revision_wikitext():
     revisions['rev_id'] = range(1, len(revisions)+1)
     revisions['parent_id'] = revisions.rev_id - 1
     return revisions
+
+@pytest.fixture
+def labeled_revisions():
+    return pd.DataFrame({
+        'wikitext': list('abcbd'),
+        'wikitext_version': [0, 1, 2, 1, 3],
+        'wikitext_parent_version': [-1, 0, 1, 2, 1]
+    })
+
+# label_versions
+# --------------
 
 def test_hashing_accepts_missing_values():
     wikitexts = pd.Series([pd.np.nan])
@@ -44,14 +53,6 @@ def test_repeated_contents_are_dropped():
 
 # drop_reversions
 # ---------------
-
-@pytest.fixture
-def labeled_revisions():
-    return pd.DataFrame({
-        'wikitext': list('abcbd'),
-        'wikitext_version': [0, 1, 2, 1, 3],
-        'wikitext_parent_version': [-1, 0, 1, 2, 1]
-    })
 
 def test_drop_reversions(labeled_revisions):
     forward = wikivision.drop_reversions(labeled_revisions)
