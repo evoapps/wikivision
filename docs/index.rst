@@ -9,7 +9,7 @@ Welcome to wikivision's documentation!
 .. automodule:: wikivision.get
    :members:
 
-.. automodule:: wikivision.format
+.. automodule:: wikivision.clean
    :members:
 
 

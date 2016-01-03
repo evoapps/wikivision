@@ -10,7 +10,7 @@ from wikivision import clean
 def connect_db(name):
     """Return a connection to the database.
 
-    Example usage::
+    Example::
 
         db_con = connect_db('histories')
         # ... interact with the database
@@ -26,6 +26,7 @@ def get_article_revisions(article_slug, db_con):
     Args:
         article_slug: The name of the Wikipedia article to retrieve.
         db_con: An open connection to the database.
+
     Returns:
         A pandas.DataFrame of revisions where each row is a version of
         the article.
@@ -48,6 +49,7 @@ def select_revisions_by_article(article_slug, db_con):
         article_slug: The name of the Wikipedia article to retrieve from
             the database.
         db_con: An open connection to the database.
+
     Returns:
         A pandas.DataFrame of revisions where each row is a version of
         the article.
@@ -71,6 +73,7 @@ def make_revisions_table(article_slug):
     Args:
         article_slug: The name of the Wikipedia article to request
             from the Wikipedia API and turn into a table of revisions.
+
     Returns:
         A pandas.DataFrame of revisions where each row is a version of
         the article.
@@ -92,6 +95,7 @@ def request(article_slug):
     Args:
         article_slug: The name of the Wikipedia article to request
             from the Wikipedia API.
+
     Returns:
         A list of revisions as dicts.
     """
