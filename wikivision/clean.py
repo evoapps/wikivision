@@ -29,20 +29,21 @@ def label_version(revisions):
     """
     revisions = revisions.copy()
 
-    # efficiently create a mapping from id to wikitext to sha1
+    # Efficiently create a mapping from id to wikitext to sha1.
+
+    # hashes are as unique as wikitexts, so only digest them once.
     hashes = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
     hashes['sha1'] = hashes.wikitext.apply(_hash)
+    # use rev_ids because they are a superset of parent_ids
     ids = revisions[['rev_id', 'wikitext']].rename(columns={'rev_id': 'id'})
+    # join sha1 column
     versions = ids.merge(hashes).set_index('id')
 
-    def label_hashes_from_ids(ids):
-        """Given ids, return the wikitext hash."""
-        return versions.reindex(ids)['sha1']
+    def get_shas(id_col):
+        return versions.reindex(revisions[id_col].values)['sha1'].values
 
-    revisions.insert(2, 'rev_sha1',
-                     label_hashes_from_ids(revisions.rev_id))
-    revisions.insert(3, 'parent_sha1',
-                     label_hashes_from_ids(revisions.parent_id))
+    revisions['rev_sha1'] = get_shas('rev_id')
+    revisions['parent_sha1'] = get_shas('parent_id')
 
     return revisions
 
