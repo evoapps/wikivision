@@ -21,13 +21,18 @@ def tidy_article_revisions(revisions):
 def label_version(revisions):
     """Label the unique versions of an article.
 
-    Args:
-        revisions: A pandas.DataFrame of revisions to an article.
-    Returns:
+    Revision histories must be complete!
+
+    :param revisions: A pandas.DataFrame of revisions to an article.
+    :returns:
         A copy of revisions with new columns that label the current version
         and the version of the parent.
     """
     revisions = revisions.copy()
+
+    # Check that the revision history is complete.
+    if (~revisions.parent_id.isin(revisions.rev_id.values)).sum() > 1:
+        raise IncompleteRevisionHistory()
 
     # Efficiently create a mapping from id to wikitext to sha1.
 
@@ -146,4 +151,5 @@ def drop_reversions(revisions):
     logging.info('dropping {} reversions'.format(is_reversion.sum()))
     return revisions.ix[~is_reversion]
 
-
+class IncompleteRevisionHistory(Exception):
+    """All revisions must be present for recreating article histories."""
