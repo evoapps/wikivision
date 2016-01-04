@@ -7,12 +7,14 @@ import sqlite3
 from wikivision import clean
 
 
-def connect_db(name):
+def connect_db(name='histories'):
     """Return a connection to the database.
+
+    The client is expected to close sessions with the database.
 
     Example::
 
-        db_con = connect_db('histories')
+        db_con = connect_db('featured_articles')
         # ... interact with the database
         db_con.close()
 
@@ -20,17 +22,25 @@ def connect_db(name):
     return sqlite3.connect('{}.sqlite'.format(name))
 
 
-def get_article_revisions(article_slug, db_con):
+def get_article_revisions(article_slug, db_con=None):
     """Retrieve all revisions made to a Wikipedia article.
 
     Args:
         article_slug: The name of the Wikipedia article to retrieve.
-        db_con: An open connection to the database.
+        db_con: An open connection to the database. If not specified,
+            a default db is created.
 
     Returns:
         A pandas.DataFrame of revisions where each row is a version of
         the article.
     """
+    if not db_con:
+        db_con = connect_db()
+        close_db = True
+    else:
+        # if it wasn't connected here, don't close it
+        close_db = False
+
     try:
         revisions = select_revisions_by_article(article_slug, db_con)
     except LookupError:
@@ -39,6 +49,9 @@ def get_article_revisions(article_slug, db_con):
         append_revisions(revisions, db_con)
     else:
         logging.info('returning revisions for {}'.format(article_slug))
+    finally:
+        if close_db:
+            db_con.close()
     return revisions
 
 
