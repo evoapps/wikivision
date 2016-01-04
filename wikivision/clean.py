@@ -36,6 +36,7 @@ def tidy_article_revisions(revisions):
     revisions = label_version(revisions)
 
     # drop repeats
+    revisions = drop_repeats(revisions)
 
     return revisions
 
