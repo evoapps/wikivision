@@ -8,11 +8,20 @@ import wikivision
 
 @pytest.fixture
 def simple_revisions():
+    """Three versions of an article."""
     return pd.DataFrame({
         'rev_sha1': ['a', 'b', 'c'],
         'parent_sha1': [nan, 'a', 'b'],
     })
 
+
+@pytest.fixture
+def single_reversion():
+    """Revisions with a single reversion."""
+    return pd.DataFrame({
+        'rev_sha1': ['a', 'b', 'a', 'c'],
+        'parent_sha1': [nan, 'a', 'b', 'a'],
+    })
 
 def test_to_graph_requires_hashes():
     wikitexts = pd.DataFrame({

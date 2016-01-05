@@ -52,6 +52,10 @@ def label_version(revisions):
     Returns:
         A copy of revisions with new columns that label the current version
         and the version of the parent.
+
+    Raises:
+        IncompleteRevisionHistoryError: There was more than one revision
+            without a parent.
     """
     revisions = revisions.copy()
 
@@ -61,19 +65,32 @@ def label_version(revisions):
 
     # Efficiently create a mapping from id to wikitext to sha1.
 
+    # ensure that revisions are in the correct order
+    if 'timestamp' in revisions:
+        revisions.sort_values(by='timestamp', ascending=True, inplace=True)
     # hashes are as unique as wikitexts, so only digest them once.
     hashes = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
     hashes['sha1'] = hashes.wikitext.apply(_hash)
+    hashes['version'] = range(len(hashes))
     # use rev_ids because they are a superset of parent_ids
     ids = revisions[['rev_id', 'wikitext']].rename(columns={'rev_id': 'id'})
     # join sha1 column
     versions = ids.merge(hashes).set_index('id')
 
+    def get_revision_info(id_col, value_col):
+        return versions.reindex(revisions[id_col].values)[value_col].values
+
     def get_shas(id_col):
-        return versions.reindex(revisions[id_col].values)['sha1'].values
+        return get_revision_info(id_col, value_col='sha1')
 
     revisions['rev_sha1'] = get_shas('rev_id')
     revisions['parent_sha1'] = get_shas('parent_id')
+
+    def get_version_number(id_col):
+        return get_revision_info(id_col, value_col='version')
+
+    revisions['rev_version'] = get_version_number('rev_id')
+    revisions['parent_version'] = get_version_number('parent_id')
 
     return revisions
 

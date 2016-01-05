@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+from numpy import nan
 
 import wikivision
 
@@ -20,6 +21,7 @@ def timestamped_revisions():
         'timestamp': pd.to_datetime(timestamps),
     })
     return revisions
+
 
 @pytest.fixture
 def labeled_revisions():
@@ -60,6 +62,20 @@ def test_parent_hash_is_added_correctly(revision_wikitext):
     expected = parent_revisions.wikitext.apply(wikivision.clean._hash)
 
     assert labeled.parent_sha1.tolist() == expected.tolist()
+
+
+def test_label_rev_version(revision_wikitext):
+    labeled = wikivision.label_version(revision_wikitext)
+    expected = [0, 1, 2, 1, 3]
+    assert labeled.rev_version.tolist() == expected
+
+
+def test_label_parent_version(revision_wikitext):
+    labeled = wikivision.label_version(revision_wikitext)
+    expected = [nan, 0, 1, 2, 1]
+    # can't check equality for missing values
+    assert labeled.parent_version.isnull().sum() == 1
+    assert labeled.parent_version.tolist()[1:] == expected[1:]
 
 
 def test_require_complete_revision_history():
