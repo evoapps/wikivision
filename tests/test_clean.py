@@ -31,6 +31,14 @@ def labeled_revisions():
         'wikitext_parent_version': [-1, 0, 1, 2, 1]
     })
 
+
+@pytest.fixture
+def revision_versions():
+    return pd.DataFrame({
+        'parent_version': [nan, 0, 1, 0, 2],
+        'rev_version': [0, 1, 0, 2, 3],
+    })
+
 # label_versions
 # --------------
 
@@ -133,3 +141,23 @@ def test_parent_version_is_dropped_from_root_node(labeled_revisions):
     root = tree_data[0]
     assert 'wikitext_parent_version' not in root
     assert all(['wikitext_parent_version' in node for node in tree_data[1:]])
+
+
+def test_label_root_revision(revision_versions):
+    revision_types = wikivision.label_revision_type(revision_versions)
+    assert revision_types.rev_type[0] == 'root'
+
+
+def test_label_stem_revisions(revision_versions):
+    revision_types = wikivision.label_revision_type(revision_versions)
+    assert all(revision_types.ix[[3, 4], 'rev_type'] == 'branch')
+
+
+def test_label_deadend_revisions(revision_versions):
+    revision_types = wikivision.label_revision_type(revision_versions)
+    assert revision_types.ix[1, 'rev_type'] == 'dead'
+
+
+def test_label_reversion_revisions(revision_versions):
+    revision_types = wikivision.label_revision_type(revision_versions)
+    assert revision_types.ix[2, 'rev_type'] == 'reversion'
