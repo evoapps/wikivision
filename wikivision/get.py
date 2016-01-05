@@ -10,14 +10,16 @@ from wikivision import clean
 def connect_db(name='histories'):
     """Return a connection to the database.
 
-    The client is expected to close sessions with the database.
+    Example:
+        The client is expected to close sessions with the database::
 
-    Example::
+            db_con = connect_db('featured_articles')
+            # ... interact with the database
+            db_con.close()
 
-        db_con = connect_db('featured_articles')
-        # ... interact with the database
-        db_con.close()
-
+    Args:
+        name (str): A name to be used as the filename for the sqlite
+            database.
     """
     return sqlite3.connect('{}.sqlite'.format(name))
 
