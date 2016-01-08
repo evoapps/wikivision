@@ -55,4 +55,3 @@ tornado==4.3
 traitlets==4.0.0
 Werkzeug==0.11.3
 wheel==0.24.0
--e git+git@github.com:pedmiston/wikivision.git@be079bf628e6fccc7783ce45721847fc44deaf0a#egg=wikivision-master
