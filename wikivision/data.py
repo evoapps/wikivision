@@ -18,7 +18,7 @@ def connect_db(name='histories'):
 
             db_con = connect_db('featured_articles')
             # ... interact with the database
-            db_con.close()            
+            db_con.close()
     """
     return sqlite3.connect('{}.sqlite'.format(name))
 
@@ -247,7 +247,7 @@ def tidy_article_revisions(revisions):
 
     revisions = label_version(revisions)
     revisions = drop_repeats(revisions)
-    revisions = label_revision_types(revisions)
+    revisions = label_revision_type(revisions)
 
     return revisions
 
