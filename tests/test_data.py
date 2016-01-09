@@ -1,9 +1,85 @@
+import os
+
 import pytest
 import pandas as pd
 from numpy import nan
 
 import wikivision
 
+
+@pytest.fixture
+def db_con(request):
+    """Setup and teardown a sqlite database."""
+    test_db_name = 'histories-test'
+    db_con = wikivision.connect_db(test_db_name)
+    def delete_db():
+        db_con.close()
+        os.remove('{}.sqlite'.format(test_db_name))
+    request.addfinalizer(delete_db)
+    return db_con
+
+# to_table
+# --------
+
+@pytest.fixture
+def json_revisions():
+    """Example list of revisions assembled from json responses."""
+    return [
+        {'a': [1, 2, 3], 'b': list('abc')},
+        {'a': [4, 5, 6], 'b': list('def')},
+    ]
+
+def test_to_table_returns_a_dataframe(json_revisions):
+    revisions = wikivision.to_table(json_revisions)
+    assert isinstance(revisions, pd.DataFrame)
+
+def test_setting_column_order(json_revisions):
+    columns = ['a', 'b']
+    rev_columns = list(reversed(columns))
+
+    revisions = wikivision.to_table(json_revisions, columns=columns)
+    rev_revisions = wikivision.to_table(json_revisions, columns=rev_columns)
+
+    assert revisions.columns.tolist() == columns
+    assert rev_revisions.columns.tolist() == rev_columns
+
+def test_adding_id_vars_to_table(json_revisions):
+    id_vars = {
+        'slug': 'testing_123',
+        'name': 'Testing 123',
+    }
+    revisions = wikivision.to_table(json_revisions, id_vars=id_vars)
+    assert all([v in revisions.columns for v in id_vars])
+
+def test_renaming_table_columns(json_revisions):
+    renamer = {'a': 'alpha', 'b': 'beta'}
+    revisions = wikivision.to_table(json_revisions, renamer=renamer)
+    got = set(revisions.columns)
+    want = set(renamer.values())
+    assert got == want, "columns weren't renamed properly"
+
+# select_revisions_by_article
+# ---------------------------
+
+def _append_test_revisions(article_slug, db_con):
+    revisions = pd.DataFrame({'article_slug': [article_slug, ]})
+    wikivision.append_revisions(revisions, db_con)
+
+def test_select_revisions_by_article(db_con):
+    test_slug = 'test_slug'
+    _append_test_revisions(test_slug, db_con)
+    revisions = wikivision.select_revisions_by_article(test_slug, db_con)
+    assert len(revisions) == 1
+
+def test_select_single_article(db_con):
+    slug1 = 'slug1'
+    slug2 = 'slug2'
+
+    _append_test_revisions(slug1, db_con)
+    _append_test_revisions(slug2, db_con)
+
+    revisions = wikivision.select_revisions_by_article(slug1, db_con)
+    assert len(revisions) == 1
 
 @pytest.fixture
 def revision_wikitext():
@@ -49,14 +125,14 @@ def test_hashing_accepts_missing_values():
     parent cannot be hashed.
     """
     wikitexts = pd.Series([pd.np.nan])
-    hashes = wikitexts.apply(wikivision.clean._hash)
+    hashes = wikitexts.apply(wikivision.data._hash)
     assert pd.isnull(hashes)[0]
 
 
 def test_wikitext_revision_hash(revision_wikitext):
     """Labeling creates a column containing a hash of the wikitexts."""
     labeled = wikivision.label_version(revision_wikitext)
-    expected = revision_wikitext.wikitext.apply(wikivision.clean._hash)
+    expected = revision_wikitext.wikitext.apply(wikivision.data._hash)
     assert labeled.rev_sha1.tolist() == expected.tolist()
 
 
@@ -67,7 +143,7 @@ def test_parent_hash_is_added_correctly(revision_wikitext):
     # get the wikitexts for the parent revisions and hash them
     parent_revisions = revision_wikitext.set_index('rev_id')
     parent_revisions = parent_revisions.reindex(parent_revisions.parent_id)
-    expected = parent_revisions.wikitext.apply(wikivision.clean._hash)
+    expected = parent_revisions.wikitext.apply(wikivision.data._hash)
 
     assert labeled.parent_sha1.tolist() == expected.tolist()
 

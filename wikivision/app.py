@@ -1,8 +1,8 @@
 from flask import Flask, render_template, jsonify, request
 app = Flask('wikivision')
 
-from .get import get_article_revisions
-from .view import tree_format
+from wikivision.data import get_article_revisions
+from wikivision.view import tree_format
 
 
 @app.route('/')

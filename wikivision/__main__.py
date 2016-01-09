@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import argparse
 
-from .app import app
+from wikivision.app import app
 
 
 def get_parser():
@@ -16,4 +16,4 @@ def get_parser():
 if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
-    app.run()
+    app.run(debug=True)

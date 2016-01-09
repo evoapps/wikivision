@@ -1,6 +1,6 @@
 import graphviz
 
-from wikivision import exceptions
+import wikivision
 
 
 def revisions_to_graph(revisions):
@@ -18,7 +18,7 @@ def revisions_to_graph(revisions):
     """
     required = ['rev_sha1', 'parent_sha1']
     if any([col not in revisions for col in required]):
-        raise exceptions.MissingRequiredColumnError()
+        raise wikivision.MissingRequiredColumnError()
 
     graph = graphviz.Digraph()
 
