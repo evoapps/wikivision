@@ -9,16 +9,16 @@ import sqlite3
 def connect_db(name='histories'):
     """Return a connection to the database.
 
+    Args:
+        name (str): A name to be used as the filename for the sqlite
+            database.
+
     Example:
         The client is expected to close sessions with the database::
 
             db_con = connect_db('featured_articles')
             # ... interact with the database
-            db_con.close()
-
-    Args:
-        name (str): A name to be used as the filename for the sqlite
-            database.
+            db_con.close()            
     """
     return sqlite3.connect('{}.sqlite'.format(name))
 
