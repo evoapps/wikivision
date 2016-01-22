@@ -28,16 +28,16 @@ def test_to_graph_requires_hashes():
         'wikitext': list('abc'),
     })
     with pytest.raises(wikivision.MissingRequiredColumnError):
-        wikivision.revisions_to_graph(wikitexts)
+        wikivision.graph_article_revisions(wikitexts)
 
 
 def test_to_graph_returns_graphviz_object(simple_revisions):
-    simple_graph = wikivision.revisions_to_graph(simple_revisions)
+    simple_graph = wikivision.graph_article_revisions(simple_revisions)
     assert isinstance(simple_graph, graphviz.Digraph)
 
 
 def test_graph_body_correct_length(simple_revisions):
-    simple_graph = wikivision.revisions_to_graph(simple_revisions)
+    simple_graph = wikivision.graph_article_revisions(simple_revisions)
 
     # calculate expected number of lines in the body of the dot source
     num_nodes = len(simple_revisions)

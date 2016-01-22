@@ -3,7 +3,7 @@ import graphviz
 import wikivision
 
 
-def revisions_to_graph(revisions):
+def graph_article_revisions(revisions):
     """Convert a revision history to a graphviz object.
 
     Args:
