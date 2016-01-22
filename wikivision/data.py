@@ -395,7 +395,6 @@ def label_revision_type(revisions):
     # initialize column
     rev_types = pd.Series(index=revisions.index)
     for i, (rev_version, parent_version) in revision_versions.iterrows():
-        print('index:', i)
         if pd.isnull(parent_version):
             rev_types[i] = 'root'
         elif rev_version > parent_version:
@@ -411,7 +410,7 @@ def label_revision_type(revisions):
             most_recent_parent_ix = parents.index[-1]
             rev_types[most_recent_parent_ix:i] = 'dead'
         else:
-            print('revision version same as parent!')
+            logging.info('revision version same as parent!')
 
     revisions['rev_type'] = rev_types
     return revisions
