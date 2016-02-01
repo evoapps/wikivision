@@ -4,14 +4,13 @@ Visualizing Wikipedia article histories
 
 .. code:: python
 
-    from graphviz import Digraph, Graph
+    import graphviz
 
 Article histories are linear.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    linear = Digraph(graph_attr={'rankdir': 'LR'})
+    linear = graphviz.Digraph(graph_attr={'rankdir': 'LR'})
     linear.node('t0')
     linear.node('t1')
     linear.node('t2')
@@ -29,11 +28,13 @@ Article histories are linear.
 
 
 But in reality there are a lot of reversions.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    reversions = Digraph(graph_attr={'rankdir': 'LR'}, node_attr={'style': 'filled', 'fontcolor': 'white'})
+    reversions = graphviz.Digraph(
+        graph_attr={'rankdir': 'LR'},
+        node_attr={'style': 'filled', 'fontcolor': 'white'},
+    )
     reversions.node('t0', label='v0', color='blue')
     reversions.node('t1', label='v1', color='green')
     reversions.node('t2', label='v2', color='red')
@@ -57,7 +58,10 @@ A better way to show article histories is as a tree.
 
 .. code:: python
 
-    full_tree = Digraph(graph_attr={'rankdir': 'LR'}, node_attr={'style': 'filled', 'fontcolor': 'white'})
+    full_tree = graphviz.Digraph(
+        graph_attr={'rankdir': 'LR'},
+        node_attr={'style': 'filled', 'fontcolor': 'white'},
+    )
     full_tree.node('v0', color='blue')
     full_tree.node('v1')
     full_tree.node('v2', color='green')
@@ -93,7 +97,10 @@ This is how edits should be counted.
 
 .. code:: python
 
-    simple = Graph(graph_attr={'rankdir': 'LR'}, node_attr={'style': 'filled', 'fontcolor': 'white'})
+    simple = graphviz.Graph(
+        graph_attr={'rankdir': 'LR'},
+        node_attr={'style': 'filled', 'fontcolor': 'white'},
+    )
     simple.node('v0', label='0', color='blue')
     simple.node('v1', label='')
     simple.node('v2', label='1', color='green')
@@ -140,41 +147,77 @@ What does a real Wikipedia article look like?
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>article_slug</th>
+          <th>rev_id</th>
+          <th>parent_id</th>
           <th>timestamp</th>
           <th>wikitext</th>
+          <th>rev_sha1</th>
+          <th>parent_sha1</th>
+          <th>rev_version</th>
+          <th>parent_version</th>
+          <th>rev_type</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>365</th>
-          <td>splendid_fairywren</td>
+          <td>129420980</td>
+          <td>0</td>
           <td>2007-05-09 02:59:16</td>
           <td>{{Taxobox\n| color = pink\n| name = Splendid F...</td>
+          <td>0860c6aa51c866f79dcc1e54ec994f09c01b37bf</td>
+          <td>False</td>
+          <td>0</td>
+          <td>0</td>
+          <td>NaN</td>
         </tr>
         <tr>
           <th>364</th>
-          <td>splendid_fairywren</td>
+          <td>129422530</td>
+          <td>129420980</td>
           <td>2007-05-09 03:07:36</td>
           <td>{{Taxobox\n| color = pink\n| name = Splendid F...</td>
+          <td>f21f402dd42b893f8301f22cf51063afe8f65e48</td>
+          <td>0860c6aa51c866f79dcc1e54ec994f09c01b37bf</td>
+          <td>1</td>
+          <td>0</td>
+          <td>branch</td>
         </tr>
         <tr>
           <th>363</th>
-          <td>splendid_fairywren</td>
+          <td>129539246</td>
+          <td>129422530</td>
           <td>2007-05-09 15:41:56</td>
           <td>{{Taxobox\n| color = pink\n| name = Splendid F...</td>
+          <td>552a572722c7527358db0a7274fe61ef759306e1</td>
+          <td>f21f402dd42b893f8301f22cf51063afe8f65e48</td>
+          <td>2</td>
+          <td>1</td>
+          <td>branch</td>
         </tr>
         <tr>
           <th>362</th>
-          <td>splendid_fairywren</td>
+          <td>129712279</td>
+          <td>129539246</td>
           <td>2007-05-10 02:21:32</td>
           <td>{{Taxobox\n| color = pink\n| name = Splendid F...</td>
+          <td>833667d437fbe3b2f7aefc538a6acdc9f0b33f5a</td>
+          <td>552a572722c7527358db0a7274fe61ef759306e1</td>
+          <td>3</td>
+          <td>2</td>
+          <td>branch</td>
         </tr>
         <tr>
           <th>361</th>
-          <td>splendid_fairywren</td>
+          <td>129753223</td>
+          <td>129712279</td>
           <td>2007-05-10 06:14:07</td>
           <td>{{Taxobox\n| color = pink\n| name = Splendid F...</td>
+          <td>c0f01ff3330b8db49f6134aa059f439b2c4955bf</td>
+          <td>833667d437fbe3b2f7aefc538a6acdc9f0b33f5a</td>
+          <td>4</td>
+          <td>3</td>
+          <td>branch</td>
         </tr>
       </tbody>
     </table>
@@ -184,38 +227,65 @@ What does a real Wikipedia article look like?
 
 .. code:: python
 
-    nodes = revisions.sha.unique()
-    edges = revisions[['sha1', 'parent_sha1']].to_records(index=False)
+    def graph(edges, remove_labels=False):
+        """Create a simple revision history Digraph from a pandas DataFrame.
+        
+        Args:
+            edges: A DataFrame with two columns, the first is the **from** column
+                and the second is the **to** column. Nodes are derived from edges.
+            remove_labels: Should the labels be removed from the nodes? Useful
+                when graphing actual revision histories and nodes are named with
+                long hashes, in which case the labels are probably not needed.
+        """
+        g = graphviz.Digraph(graph_attr={'rankdir': 'LR'})
+        
+        # add the nodes
+        nodes = set(edges.iloc[:, 0]).union(set(edges.iloc[:, 1]))
+        for name in nodes:
+            label = '' if remove_labels else name
+            g.node(name, label=label)
+        
+        # add the edges
+        g.edges([(from_node, to_node) for _, (from_node, to_node) in edges.iterrows()])
+        
+        return g
     
-    splendid_fairywren = Digraph(node_attr={'label': ''})
-    for name in nodes:
-        splendid_fairywren.node(name)
-    splendid_fairywren.edges(edges)
-    splendid_fairywren
+    def graph_article_revisions(article_slug):
+        """Create a Digraph from a Wikipedia article's revision history."""
+        revisions = wikivision.get_article_revisions(article_slug)
+        revision_edges = revisions[['parent_sha1', 'rev_sha1']].iloc[1:]
+        return graph(revision_edges, remove_labels=True)
+
+.. code:: python
+
+    graph_article_revisions('splendid_fairywren')
 
 
-::
 
 
-    ---------------------------------------------------------------------------
-
-    AttributeError                            Traceback (most recent call last)
-
-    <ipython-input-55-7401cad5bfb9> in <module>()
-    ----> 1 nodes = revisions.sha.unique()
-          2 edges = revisions[['sha1', 'parent_sha1']].to_records(index=False)
-          3 
-          4 splendid_fairywren = Digraph(node_attr={'label': ''})
-          5 for name in nodes:
+.. image:: visualizing-article-histories_files/visualizing-article-histories_13_0.svg
 
 
-    /Users/pierce/.venvs/wikivision/lib/python3.5/site-packages/pandas/core/generic.py in __getattr__(self, name)
-       2358                 return self[name]
-       2359             raise AttributeError("'%s' object has no attribute '%s'" %
-    -> 2360                                  (type(self).__name__, name))
-       2361 
-       2362     def __setattr__(self, name, value):
+
+.. code:: python
+
+    graph_article_revisions('Google_DeepMind')
 
 
-    AttributeError: 'DataFrame' object has no attribute 'sha'
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_14_0.svg
+
+
+
+.. code:: python
+
+    graph_article_revisions('Shepseskare')
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_15_0.svg
+
+
 

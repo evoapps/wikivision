@@ -53,6 +53,7 @@ clean:
 
 notebooks:
 	jupyter nbconvert --to rst --output visualizing-article-histories.rst ../notebooks/visualizing-article-histories.ipynb
+	jupyter nbconvert --to rst --output creating-graphs-from-revisions.rst ../notebooks/creating-graphs-from-revisions.ipynb
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
