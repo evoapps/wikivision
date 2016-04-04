@@ -279,6 +279,10 @@ def label_version(revisions):
     # ensure that revisions are in the correct order
     if 'timestamp' in revisions:
         revisions.sort_values(by='timestamp', ascending=True, inplace=True)
+
+    # replace any missing wikitexts
+    revisions.wikitext.fillna('', inplace=True)
+
     # hashes are as unique as wikitexts, so only digest them once.
     hashes = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
     hashes['sha1'] = hashes.wikitext.apply(_hash)
@@ -310,6 +314,8 @@ def _hash(wikitext):
     # don't try to hash missing values
     if pd.isnull(wikitext):
         return wikitext
+    if not wikitext:
+        wikitext = ''
     return hashlib.sha1(bytes(wikitext, 'utf-8')).hexdigest()
 
 

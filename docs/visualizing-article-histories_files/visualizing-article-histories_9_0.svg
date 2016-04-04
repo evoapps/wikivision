@@ -11,8 +11,8 @@
 <polygon fill="white" stroke="none" points="-4,4 -4,-148 418,-148 418,4 -4,4"/>
 <!-- v0 -->
 <g id="node1" class="node"><title>v0</title>
-<ellipse fill="blue" stroke="blue" cx="27" cy="-99" rx="27" ry="18"/>
-<text text-anchor="middle" x="27" y="-94.8" font-family="Times,serif" font-size="14.00" fill="white">0</text>
+<ellipse fill="#66c2a5" stroke="#66c2a5" cx="27" cy="-99" rx="27" ry="18"/>
+<text text-anchor="middle" x="27" y="-94.8" font-family="Times,serif" font-size="14.00" fill="white">1</text>
 </g>
 <!-- v1 -->
 <g id="node2" class="node"><title>v1</title>
@@ -24,8 +24,8 @@
 </g>
 <!-- v2 -->
 <g id="node3" class="node"><title>v2</title>
-<ellipse fill="green" stroke="green" cx="117" cy="-72" rx="27" ry="18"/>
-<text text-anchor="middle" x="117" y="-67.8" font-family="Times,serif" font-size="14.00" fill="white">1</text>
+<ellipse fill="#fc8d62" stroke="#fc8d62" cx="117" cy="-72" rx="27" ry="18"/>
+<text text-anchor="middle" x="117" y="-67.8" font-family="Times,serif" font-size="14.00" fill="white">2</text>
 </g>
 <!-- v0&#45;&#45;v2 -->
 <g id="edge2" class="edge"><title>v0&#45;&#45;v2</title>
@@ -33,8 +33,8 @@
 </g>
 <!-- v3 -->
 <g id="node4" class="node"><title>v3</title>
-<ellipse fill="red" stroke="red" cx="207" cy="-72" rx="27" ry="18"/>
-<text text-anchor="middle" x="207" y="-67.8" font-family="Times,serif" font-size="14.00" fill="white">2</text>
+<ellipse fill="#8da0cb" stroke="#8da0cb" cx="207" cy="-72" rx="27" ry="18"/>
+<text text-anchor="middle" x="207" y="-67.8" font-family="Times,serif" font-size="14.00" fill="white">3</text>
 </g>
 <!-- v2&#45;&#45;v3 -->
 <g id="edge3" class="edge"><title>v2&#45;&#45;v3</title>
@@ -58,8 +58,8 @@
 </g>
 <!-- v6 -->
 <g id="node7" class="node"><title>v6</title>
-<ellipse fill="orange" stroke="orange" cx="297" cy="-18" rx="27" ry="18"/>
-<text text-anchor="middle" x="297" y="-13.8" font-family="Times,serif" font-size="14.00" fill="white">3</text>
+<ellipse fill="#e78ac3" stroke="#e78ac3" cx="297" cy="-18" rx="27" ry="18"/>
+<text text-anchor="middle" x="297" y="-13.8" font-family="Times,serif" font-size="14.00" fill="white">4</text>
 </g>
 <!-- v3&#45;&#45;v6 -->
 <g id="edge6" class="edge"><title>v3&#45;&#45;v6</title>
@@ -67,8 +67,8 @@
 </g>
 <!-- v7 -->
 <g id="node8" class="node"><title>v7</title>
-<ellipse fill="purple" stroke="purple" cx="387" cy="-18" rx="27" ry="18"/>
-<text text-anchor="middle" x="387" y="-13.8" font-family="Times,serif" font-size="14.00" fill="white">4</text>
+<ellipse fill="#a6d854" stroke="#a6d854" cx="387" cy="-18" rx="27" ry="18"/>
+<text text-anchor="middle" x="387" y="-13.8" font-family="Times,serif" font-size="14.00" fill="white">5</text>
 </g>
 <!-- v6&#45;&#45;v7 -->
 <g id="edge7" class="edge"><title>v6&#45;&#45;v7</title>

@@ -7,6 +7,7 @@ Visualizing Wikipedia article histories
     import graphviz
 
 Article histories are linear.
+-----------------------------
 
 .. code:: python
 
@@ -28,6 +29,7 @@ Article histories are linear.
 
 
 But in reality there are a lot of reversions.
+---------------------------------------------
 
 .. code:: python
 
@@ -35,10 +37,10 @@ But in reality there are a lot of reversions.
         graph_attr={'rankdir': 'LR'},
         node_attr={'style': 'filled', 'fontcolor': 'white'},
     )
-    reversions.node('t0', label='v0', color='blue')
-    reversions.node('t1', label='v1', color='green')
-    reversions.node('t2', label='v2', color='red')
-    reversions.node('t3', label='v1', color='green')
+    reversions.node('t0', label='v0', color='#66c2a5')
+    reversions.node('t1', label='v1', color='#fc8d62')
+    reversions.node('t2', label='v2', color='#8da0cb')
+    reversions.node('t3', label='v1', color='#fc8d62')
     reversions.edges([
             ('t0', 't1'),
             ('t1', 't2'),
@@ -54,7 +56,7 @@ But in reality there are a lot of reversions.
 
 
 A better way to show article histories is as a tree.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------------------
 
 .. code:: python
 
@@ -62,14 +64,14 @@ A better way to show article histories is as a tree.
         graph_attr={'rankdir': 'LR'},
         node_attr={'style': 'filled', 'fontcolor': 'white'},
     )
-    full_tree.node('v0', color='blue')
+    full_tree.node('v0', color='#66c2a5')
     full_tree.node('v1')
-    full_tree.node('v2', color='green')
-    full_tree.node('v3', color='red')
+    full_tree.node('v2', color='#fc8d62')
+    full_tree.node('v3', color='#8da0cb')
     full_tree.node('v4')
     full_tree.node('v5')
-    full_tree.node('v6', color='orange')
-    full_tree.node('v7', color='purple')
+    full_tree.node('v6', color='#e78ac3')
+    full_tree.node('v7', color='#a6d854')
     
     full_tree.edges([
             ('v0', 'v1'),
@@ -93,7 +95,7 @@ A better way to show article histories is as a tree.
 
 
 This is how edits should be counted.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 .. code:: python
 
@@ -101,14 +103,14 @@ This is how edits should be counted.
         graph_attr={'rankdir': 'LR'},
         node_attr={'style': 'filled', 'fontcolor': 'white'},
     )
-    simple.node('v0', label='0', color='blue')
+    simple.node('v0', label='1', color='#66c2a5')
     simple.node('v1', label='')
-    simple.node('v2', label='1', color='green')
-    simple.node('v3', label='2', color='red')
+    simple.node('v2', label='2', color='#fc8d62')
+    simple.node('v3', label='3', color='#8da0cb')
     simple.node('v4', label='')
     simple.node('v5', label='')
-    simple.node('v6', label='3', color='orange')
-    simple.node('v7', label='4', color='purple')
+    simple.node('v6', label='4', color='#e78ac3')
+    simple.node('v7', label='5', color='#a6d854')
     
     simple.edges([
             ('v0', 'v1'),
@@ -129,7 +131,7 @@ This is how edits should be counted.
 
 
 What does a real Wikipedia article look like?
-=============================================
+---------------------------------------------
 
 .. code:: python
 
@@ -243,7 +245,7 @@ What does a real Wikipedia article look like?
         nodes = set(edges.iloc[:, 0]).union(set(edges.iloc[:, 1]))
         for name in nodes:
             label = '' if remove_labels else name
-            g.node(name, label=label)
+            g.node(str(name), label=label)
         
         # add the edges
         g.edges([(from_node, to_node) for _, (from_node, to_node) in edges.iterrows()])
@@ -258,7 +260,8 @@ What does a real Wikipedia article look like?
 
 .. code:: python
 
-    graph_article_revisions('splendid_fairywren')
+    splendid_fairywren = graph_article_revisions('splendid_fairywren')
+    splendid_fairywren
 
 
 
@@ -269,7 +272,8 @@ What does a real Wikipedia article look like?
 
 .. code:: python
 
-    graph_article_revisions('Google_DeepMind')
+    deepmind = graph_article_revisions('Google_DeepMind')
+    deepmind
 
 
 
@@ -280,12 +284,34 @@ What does a real Wikipedia article look like?
 
 .. code:: python
 
-    graph_article_revisions('Shepseskare')
+    shepseskare = graph_article_revisions('Shepseskare')
+    shepseskare
 
 
 
 
 .. image:: visualizing-article-histories_files/visualizing-article-histories_15_0.svg
 
+
+
+.. code:: python
+
+    preteen = graph_article_revisions('Preadolescence')
+    preteen
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_16_0.svg
+
+
+
+
+
+
+
+.. parsed-literal::
+
+    'visualizing-article-histories-files/preteen.gv.pdf'
 
 

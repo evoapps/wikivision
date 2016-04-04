@@ -123,10 +123,13 @@ def test_hashing_accepts_missing_values():
 
     The first version of an article doesn't have a parent, so it's
     parent cannot be hashed.
+
+    Empty versions of the article should hash the empty string.
     """
-    wikitexts = pd.Series([pd.np.nan])
+    wikitexts = pd.Series([pd.np.nan, False])
     hashes = wikitexts.apply(wikivision.data._hash)
     assert pd.isnull(hashes)[0]
+    assert ~pd.isnull(hashes)[1]
 
 
 def test_wikitext_revision_hash(revision_wikitext):
