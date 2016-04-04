@@ -2,15 +2,14 @@
 Visualizing Wikipedia article histories
 =======================================
 
+Revision trees
+--------------
+
+Article histories are linear.
+
 .. code:: python
 
     import graphviz
-
-Article histories are linear.
------------------------------
-
-.. code:: python
-
     linear = graphviz.Digraph(graph_attr={'rankdir': 'LR'})
     linear.node('t0')
     linear.node('t1')
@@ -29,7 +28,6 @@ Article histories are linear.
 
 
 But in reality there are a lot of reversions.
----------------------------------------------
 
 .. code:: python
 
@@ -56,7 +54,6 @@ But in reality there are a lot of reversions.
 
 
 A better way to show article histories is as a tree.
-----------------------------------------------------
 
 .. code:: python
 
@@ -94,50 +91,17 @@ A better way to show article histories is as a tree.
 
 
 
-This is how edits should be counted.
-------------------------------------
-
-.. code:: python
-
-    simple = graphviz.Graph(
-        graph_attr={'rankdir': 'LR'},
-        node_attr={'style': 'filled', 'fontcolor': 'white'},
-    )
-    simple.node('v0', label='1', color='#66c2a5')
-    simple.node('v1', label='')
-    simple.node('v2', label='2', color='#fc8d62')
-    simple.node('v3', label='3', color='#8da0cb')
-    simple.node('v4', label='')
-    simple.node('v5', label='')
-    simple.node('v6', label='4', color='#e78ac3')
-    simple.node('v7', label='5', color='#a6d854')
-    
-    simple.edges([
-            ('v0', 'v1'),
-            ('v0', 'v2'),
-            ('v2', 'v3'),
-            ('v3', 'v4'),
-            ('v3', 'v5'),
-            ('v3', 'v6'),
-            ('v6', 'v7'),
-        ])
-    simple
-
-
-
-
-.. image:: visualizing-article-histories_files/visualizing-article-histories_9_0.svg
-
-
-
 What does a real Wikipedia article look like?
 ---------------------------------------------
+
+To draw a real revision tree, first we need to get all of the revisions
+to an article.
 
 .. code:: python
 
     import wikivision
     revisions = wikivision.get_article_revisions('splendid_fairywren')
-    revisions.head()
+    revisions.head(n=4)
 
 
 
@@ -209,18 +173,6 @@ What does a real Wikipedia article look like?
           <td>2</td>
           <td>branch</td>
         </tr>
-        <tr>
-          <th>361</th>
-          <td>129753223</td>
-          <td>129712279</td>
-          <td>2007-05-10 06:14:07</td>
-          <td>{{Taxobox\n| color = pink\n| name = Splendid F...</td>
-          <td>c0f01ff3330b8db49f6134aa059f439b2c4955bf</td>
-          <td>833667d437fbe3b2f7aefc538a6acdc9f0b33f5a</td>
-          <td>4</td>
-          <td>3</td>
-          <td>branch</td>
-        </tr>
       </tbody>
     </table>
     </div>
@@ -229,39 +181,32 @@ What does a real Wikipedia article look like?
 
 .. code:: python
 
-    def graph(edges, remove_labels=False):
-        """Create a simple revision history Digraph from a pandas DataFrame.
-        
-        Args:
-            edges: A DataFrame with two columns, the first is the **from** column
-                and the second is the **to** column. Nodes are derived from edges.
-            remove_labels: Should the labels be removed from the nodes? Useful
-                when graphing actual revision histories and nodes are named with
-                long hashes, in which case the labels are probably not needed.
-        """
-        g = graphviz.Digraph(graph_attr={'rankdir': 'LR'})
-        
-        # add the nodes
-        nodes = set(edges.iloc[:, 0]).union(set(edges.iloc[:, 1]))
-        for name in nodes:
-            label = '' if remove_labels else name
-            g.node(str(name), label=label)
-        
-        # add the edges
-        g.edges([(from_node, to_node) for _, (from_node, to_node) in edges.iterrows()])
-        
-        return g
-    
-    def graph_article_revisions(article_slug):
-        """Create a Digraph from a Wikipedia article's revision history."""
-        revisions = wikivision.get_article_revisions(article_slug)
-        revision_edges = revisions[['parent_sha1', 'rev_sha1']].iloc[1:]
-        return graph(revision_edges, remove_labels=True)
+    splendid_fairywren = wikivision.graph_article_revisions('splendid_fairywren')
+    splendid_fairywren
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_11_0.svg
+
+
 
 .. code:: python
 
-    splendid_fairywren = graph_article_revisions('splendid_fairywren')
-    splendid_fairywren
+    deepmind = wikivision.graph_article_revisions('Google_DeepMind')
+    deepmind
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_12_0.svg
+
+
+
+.. code:: python
+
+    shepseskare = wikivision.graph_article_revisions('Shepseskare')
+    shepseskare
 
 
 
@@ -270,33 +215,15 @@ What does a real Wikipedia article look like?
 
 
 
-.. code:: python
+What do edit wars look like?
+----------------------------
 
-    deepmind = graph_article_revisions('Google_DeepMind')
-    deepmind
-
-
-
-
-.. image:: visualizing-article-histories_files/visualizing-article-histories_14_0.svg
-
-
+`Wikipedia's lamest edit
+wars <http://www.informationisbeautiful.net/visualizations/wikipedia-lamest-edit-wars/>`__.
 
 .. code:: python
 
-    shepseskare = graph_article_revisions('Shepseskare')
-    shepseskare
-
-
-
-
-.. image:: visualizing-article-histories_files/visualizing-article-histories_15_0.svg
-
-
-
-.. code:: python
-
-    preteen = graph_article_revisions('Preadolescence')
+    preteen = wikivision.graph_article_revisions('Preadolescence')
     preteen
 
 
@@ -306,12 +233,52 @@ What does a real Wikipedia article look like?
 
 
 
+.. code:: python
+
+    street_fighter = wikivision.graph_article_revisions('Balrog_(Street_Fighter)')
+    street_fighter
 
 
 
 
-.. parsed-literal::
+.. image:: visualizing-article-histories_files/visualizing-article-histories_17_0.svg
 
-    'visualizing-article-histories-files/preteen.gv.pdf'
+
+
+Counting edits
+--------------
+
+This is how edits should be counted.
+
+.. code:: python
+
+    simple = graphviz.Graph(
+        graph_attr={'rankdir': 'LR'},
+        node_attr={'style': 'filled', 'fontcolor': 'white'},
+    )
+    simple.node('v0', label='1', color='#66c2a5')
+    simple.node('v1', label='')
+    simple.node('v2', label='2', color='#fc8d62')
+    simple.node('v3', label='3', color='#8da0cb')
+    simple.node('v4', label='')
+    simple.node('v5', label='')
+    simple.node('v6', label='4', color='#e78ac3')
+    simple.node('v7', label='5', color='#a6d854')
+    
+    simple.edges([
+            ('v0', 'v1'),
+            ('v0', 'v2'),
+            ('v2', 'v3'),
+            ('v3', 'v4'),
+            ('v3', 'v5'),
+            ('v3', 'v6'),
+            ('v6', 'v7'),
+        ])
+    simple
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_20_0.svg
 
 
