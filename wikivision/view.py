@@ -3,33 +3,35 @@ import graphviz
 import wikivision
 
 
-def graph_article_revisions(revisions):
-    """Convert a revision history to a graphviz object.
+def graph(edges, remove_labels=False):
+    """Create a simple revision history Digraph from a pandas DataFrame.
 
     Args:
-        revisions: A pandas.DataFrame of article revisions.
-
-    Returns:
-        A graphviz.Digraph object.
-
-    Raises:
-        MissingRequiredColumnError: if revisions doesn't have rev_sha1 or
-            parent_sha1 columns.
+        edges: A DataFrame with two columns, the first is the **from** column
+            and the second is the **to** column. Nodes are derived from edges.
+        remove_labels: Should the labels be removed from the nodes? Useful
+            when graphing actual revision histories and nodes are named with
+            long hashes, in which case the labels are probably not needed.
     """
-    required = ['rev_sha1', 'parent_sha1']
-    if any([col not in revisions for col in required]):
-        raise wikivision.MissingRequiredColumnError()
+    g = graphviz.Digraph(graph_attr={'rankdir': 'LR'})
 
-    graph = graphviz.Digraph()
+    # add the nodes
+    nodes = set(edges.iloc[:, 0]).union(set(edges.iloc[:, 1]))
+    for name in nodes:
+        label = '' if remove_labels else name
+        g.node(str(name), label=label)
 
-    for node in revisions.rev_sha1.unique():
-        graph.node(node)
+    # add the edges
+    g.edges([(from_node, to_node) for _, (from_node, to_node) in edges.iterrows()])
 
-    edges = revisions[['parent_sha1', 'rev_sha1']].iloc[1:]
-    for _, (parent, current) in edges.iterrows():
-        graph.edge(parent, current)
+    return g
 
-    return graph
+
+def graph_article_revisions(article_slug):
+    """Create a Digraph from a Wikipedia article's revision history."""
+    revisions = wikivision.get_article_revisions(article_slug)
+    revision_edges = revisions[['parent_sha1', 'rev_sha1']].iloc[1:]
+    return graph(revision_edges, remove_labels=True)
 
 
 def tree_format(revisions):
