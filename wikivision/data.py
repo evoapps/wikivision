@@ -282,6 +282,8 @@ def label_version(revisions):
 
     # replace any missing wikitexts
     revisions.wikitext.fillna('', inplace=True)
+    non_texts = revisions.wikitext.apply(lambda x: not isinstance(x, str))
+    revisions.loc[non_texts, 'wikitext'] = ''
 
     # hashes are as unique as wikitexts, so only digest them once.
     hashes = pd.DataFrame({'wikitext': revisions.wikitext.unique()})
