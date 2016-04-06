@@ -420,7 +420,7 @@ def label_revision_type(revisions):
         else:
             logging.info('revision version same as parent!')
 
-    revisions['rev_type'] = rev_types
+    revisions['rev_type'] = rev_types.fillna('root')
     return revisions
 
 
