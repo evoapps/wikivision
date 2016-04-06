@@ -229,12 +229,12 @@ def test_label_root_revision(revision_versions):
 
 def test_label_stem_revisions(revision_versions):
     revision_types = wikivision.label_revision_type(revision_versions)
-    assert all(revision_types.ix[[3, 4], 'rev_type'] == 'branch')
+    assert all(revision_types.ix[[3, 4], 'rev_type'] == ['branch', 'head'])
 
 
 def test_label_deadend_revisions(revision_versions):
     revision_types = wikivision.label_revision_type(revision_versions)
-    assert revision_types.ix[1, 'rev_type'] == 'dead'
+    assert revision_types.ix[1, 'rev_type'] == 'reversion'
 
 
 def test_label_reversion_revisions(revision_versions):

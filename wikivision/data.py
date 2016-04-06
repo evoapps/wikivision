@@ -2,6 +2,7 @@ import hashlib
 import logging
 
 import pandas as pd
+from numpy import nan
 import requests
 import sqlite3
 
@@ -401,29 +402,35 @@ def label_revision_type(revisions):
     # NB: Index needs to be fresh!
     revisions.reset_index(drop=True, inplace=True)
 
-    revision_versions = revisions[['parent_version', 'rev_version']]
+    # ensure root doesn't have a parent
+    revisions.loc[0, 'parent_version'] = nan
 
-    # initialize column
-    rev_types = pd.Series(index=revisions.index)
-    for i, (parent_version, rev_version) in revision_versions.iterrows():
-        if pd.isnull(parent_version):
-            rev_types[i] = 'root'
-        elif rev_version > parent_version:
-            rev_types[i] = 'branch'
-        elif rev_version < parent_version:
-            rev_types[i] = 'reversion'
+    # default rev type is reversion
+    rev_types = pd.Series('reversion', index=revisions.index)
 
-            # This revision was a reversion to a previous version.
-            # Go back and label all revisions between the previous
-            # version and this reversion as 'dead' revision types.
-            past = revisions.ix[:i]
-            parents = past[past.rev_version == parent_version]
-            most_recent_parent_ix = parents.index[-1]
-            rev_types[most_recent_parent_ix:i] = 'dead'
-        else:
-            logging.info('revision version same as parent!')
+    # label the root and the head
+    root_ix = revisions.index[0]
+    head_ix = revisions.index[-1]
 
-    revisions['rev_type'] = rev_types.fillna('root')
+    rev_types[root_ix] = 'root'
+    rev_types[head_ix] = 'head'
+
+    # recursively label branches starting at head
+    def label_parent_branch(rev_version):
+        parent_version = revisions.ix[revisions.rev_version == rev_version, 'parent_version']
+        parent_type = rev_types[parent_version.index].values
+        # If you haven't reached the root, change the rev type to branch
+        # and recurse on parent
+        if len(parent_type) > 0 and parent_type[0] != 'root':
+            rev_types[parent_version.index] = 'branch'
+            label_parent_branch(parent_version.values[0])
+
+    label_parent_branch(revisions.loc[head_ix, 'parent_version'])
+
+    # relabel the head if needed
+    rev_types[head_ix] = 'head'
+
+    revisions['rev_type'] = rev_types
     return revisions
 
 

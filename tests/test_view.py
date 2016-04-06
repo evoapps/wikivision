@@ -46,7 +46,3 @@ def test_graph_body_correct_length(simple_edges):
     expected_body_len = num_nodes + num_edges
 
     assert len(simple_graph.body), expected_body_len
-
-
-def test_format_node_rev_type(single_reversion):
-    nodes = wikivision.format_nodes(single_reversion)
