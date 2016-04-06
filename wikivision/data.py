@@ -334,6 +334,7 @@ def convert_timestamp_to_datetime(revisions):
     revisions = revisions.copy()
     revisions['timestamp'] = pd.to_datetime(revisions.timestamp)
     revisions.sort_values(by='timestamp', inplace=True)
+    revisions.reset_index(drop=True, inplace=True)
     return revisions
 
 
@@ -397,11 +398,14 @@ def label_revision_type(revisions):
     Returns:
         A pandas.DataFrame with an additional column `revision_type`.
     """
-    revision_versions = revisions[['rev_version', 'parent_version']]
+    # NB: Index needs to be fresh!
+    revisions.reset_index(drop=True, inplace=True)
+
+    revision_versions = revisions[['parent_version', 'rev_version']]
 
     # initialize column
     rev_types = pd.Series(index=revisions.index)
-    for i, (rev_version, parent_version) in revision_versions.iterrows():
+    for i, (parent_version, rev_version) in revision_versions.iterrows():
         if pd.isnull(parent_version):
             rev_types[i] = 'root'
         elif rev_version > parent_version:

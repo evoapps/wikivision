@@ -24,6 +24,14 @@ def single_reversion():
     })[['parent_sha1', 'rev_sha1']]
 
 
+@pytest.fixture
+def nodes():
+    return pd.DataFrame({
+        'rev_sha1': list('abcde'),
+        'rev_type': ['root', 'branch', 'branch', 'reversion']
+    })
+
+
 def test_to_graph_returns_graphviz_object(simple_edges):
     simple_graph = wikivision.graph(simple_edges)
     assert isinstance(simple_graph, graphviz.Digraph)
@@ -38,3 +46,7 @@ def test_graph_body_correct_length(simple_edges):
     expected_body_len = num_nodes + num_edges
 
     assert len(simple_graph.body), expected_body_len
+
+
+def test_format_node_rev_type(single_reversion):
+    nodes = wikivision.format_nodes(single_reversion)
