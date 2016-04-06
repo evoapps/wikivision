@@ -9,18 +9,7 @@ def graph_article_revisions(article_slug, highlight=False):
     revisions = wikivision.get_article_revisions(article_slug)
 
     edges = revisions[['parent_sha1', 'rev_sha1']].iloc[1:]
-    nodes = revisions[['rev_sha1', 'rev_type']].drop_duplicates()
-
-    if highlight:
-        rev_type_color = dict(reversion='#D3D3D3',
-                              root='#8da0cb',
-                              branch='#66c2a5')
-
-        nodes['style'] = 'filled'
-        nodes['color'] = nodes.rev_type.apply(lambda x: rev_type_color[x])
-
-    nodes.rename(columns={'rev_sha1': 'label'}, inplace=True)
-    nodes.drop('rev_type', axis=1, inplace=True)
+    nodes = format_nodes(revisions, highlight=highlight)
 
     return graph(edges, nodes, remove_labels=True)
 
@@ -54,6 +43,27 @@ def graph(edges, nodes=None, remove_labels=False):
     g.edges([(from_node, to_node) for _, (from_node, to_node) in edges.iterrows()])
 
     return g
+
+
+def format_nodes(revisions, highlight=False):
+    """Reduce revisions to unique nodes and attributes."""
+    # Select unique nodes based on rev_sha1, and keep the first rev_type
+    nodes = revisions[['rev_sha1', 'rev_type']].drop_duplicates(
+        subset='rev_sha1', keep='last'
+    )
+
+    if highlight:
+        rev_type_color = dict(reversion='#D3D3D3',
+                              root='#8da0cb',
+                              branch='#66c2a5')
+
+        nodes['style'] = 'filled'
+        nodes['color'] = nodes.rev_type.apply(lambda x: rev_type_color[x])
+
+    nodes.rename(columns={'rev_sha1': 'label'}, inplace=True)
+    nodes.drop('rev_type', axis=1, inplace=True)
+
+    return nodes
 
 
 def tree_format(revisions):

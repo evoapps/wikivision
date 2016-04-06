@@ -388,8 +388,7 @@ def label_revision_type(revisions):
     Possible revision types are:
 
     - root
-    - stem
-    - deadend
+    - branch
     - reversion
 
     Args:
