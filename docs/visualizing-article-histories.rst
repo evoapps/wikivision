@@ -126,7 +126,7 @@ to an article.
       </thead>
       <tbody>
         <tr>
-          <th>365</th>
+          <th>0</th>
           <td>129420980</td>
           <td>0</td>
           <td>2007-05-09 02:59:16</td>
@@ -134,11 +134,11 @@ to an article.
           <td>0860c6aa51c866f79dcc1e54ec994f09c01b37bf</td>
           <td>False</td>
           <td>0</td>
-          <td>0</td>
           <td>NaN</td>
+          <td>root</td>
         </tr>
         <tr>
-          <th>364</th>
+          <th>1</th>
           <td>129422530</td>
           <td>129420980</td>
           <td>2007-05-09 03:07:36</td>
@@ -150,7 +150,7 @@ to an article.
           <td>branch</td>
         </tr>
         <tr>
-          <th>363</th>
+          <th>2</th>
           <td>129539246</td>
           <td>129422530</td>
           <td>2007-05-09 15:41:56</td>
@@ -162,7 +162,7 @@ to an article.
           <td>branch</td>
         </tr>
         <tr>
-          <th>362</th>
+          <th>3</th>
           <td>129712279</td>
           <td>129539246</td>
           <td>2007-05-10 02:21:32</td>
@@ -280,5 +280,43 @@ This is how edits should be counted.
 
 
 .. image:: visualizing-article-histories_files/visualizing-article-histories_20_0.svg
+
+
+
+.. code:: python
+
+    shepseskare = wikivision.graph_article_revisions('Shepseskare', highlight=True)
+    shepseskare
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_21_0.svg
+
+
+
+.. code:: python
+
+    preteen = wikivision.graph_article_revisions('Preadolescence', highlight=True)
+    preteen
+
+
+
+
+.. image:: visualizing-article-histories_files/visualizing-article-histories_22_0.svg
+
+
+
+.. code:: python
+
+    preteen.render('visualizing-article-histories-files/preteen.gv')
+    shepseskare.render('visualizing-article-histories-files/shepseskare.gv')
+
+
+
+
+.. parsed-literal::
+
+    'visualizing-article-histories-files/shepseskare.gv.pdf'
 
 
