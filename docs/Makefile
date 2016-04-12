@@ -54,6 +54,7 @@ clean:
 notebooks:
 	jupyter nbconvert --to rst --output visualizing-article-histories.rst ../notebooks/visualizing-article-histories.ipynb
 	jupyter nbconvert --to rst --output creating-graphs-from-revisions.rst ../notebooks/creating-graphs-from-revisions.ipynb
+	jupyter nbconvert --to rst --output compare-revision-trees.rst ../notebooks/compare-revision-trees.ipynb
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
