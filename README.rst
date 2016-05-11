@@ -16,7 +16,7 @@ the requirements::
 
     $ virtualenv --python=python3 ~/.venvs/wikivision
     $ source ~/.venvs/wikivision/bin/activate
-    (wikivision) $ git clone https://github.com/pedmiston/wikivision.git
+    (wikivision) $ git clone https://github.com/evoapps/wikivision.git
     (wikivision) $ cd wikivision
     (wikivision) wikivision/$ pip install -r requirements/dev.txt
 
